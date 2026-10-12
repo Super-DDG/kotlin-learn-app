@@ -55,7 +55,10 @@ com.kotlin.learn
 ├── MainActivity.kt              // 单 Activity 入口
 ├── data/
 │   ├── model/Lesson.kt          // Lesson/Course/QuizQuestion 数据模型
-│   ├── content/Curriculum.kt    // 课程内容入口（按模块分文件）
+│   ├── content/Curriculum.kt    // 课程内容入口（聚合各模块文件）
+│   ├── content/KotlinBasics.kt  // 模块一课程数据
+│   ├── content/AndroidCore.kt   // 模块二课程数据
+│   ├── content/ComposeBasics.kt // 模块三课程数据
 │   └── progress/ProgressStore.kt // DataStore 进度读写
 ├── ui/
 │   ├── navigation/AppNav.kt     // Navigation Compose 路由
