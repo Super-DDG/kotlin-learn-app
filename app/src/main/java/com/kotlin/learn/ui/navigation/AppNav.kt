@@ -27,16 +27,19 @@ import com.kotlin.learn.ui.screens.HomeScreen
 import com.kotlin.learn.ui.screens.LessonListScreen
 import com.kotlin.learn.ui.screens.LessonScreen
 import com.kotlin.learn.ui.screens.NotFoundScreen
+import com.kotlin.learn.ui.screens.QuizScreen
 import kotlinx.coroutines.launch
 
 object Routes {
     const val HOME = "home"
     const val MODULE = "module/{moduleId}"
     const val LESSON = "lesson/{lessonId}"
+    const val QUIZ = "quiz/{lessonId}"
     const val DEMO_LAND = "demo-land"
     const val DEMO = "demo/{demoId}"
     fun module(moduleId: String) = "module/$moduleId"
     fun lesson(lessonId: String) = "lesson/$lessonId"
+    fun quiz(lessonId: String) = "quiz/$lessonId"
     fun demo(demoId: String) = "demo/$demoId"
 }
 
@@ -83,8 +86,20 @@ fun AppNav(progressStore: ProgressStore) {
             } else {
                 LessonScreen(
                     lesson = lesson,
+                    onQuizClick = { navController.navigate(Routes.quiz(lesson.id)) },
+                )
+            }
+        }
+        composable(Routes.QUIZ) { backStackEntry ->
+            val lessonId = backStackEntry.arguments?.getString("lessonId")
+            val lesson = Curriculum.findLesson(lessonId.orEmpty())
+            if (lesson == null) {
+                NotFoundScreen()
+            } else {
+                QuizScreen(
+                    lesson = lesson,
+                    onBack = { navController.popBackStack() },
                     onSubmitQuiz = { correct, total ->
-                        // 交卷即记完成；写库放在协程里
                         scope.launch { progressStore.recordQuizResult(lessonId!!, correct, total) }
                     },
                 )

@@ -40,7 +40,7 @@ import com.kotlin.learn.ui.theme.WarmOn
 @Composable
 fun LessonScreen(
     lesson: Lesson,
-    onSubmitQuiz: (correct: Int, total: Int) -> Unit,
+    onQuizClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val appear = remember { Animatable(0f) }
@@ -97,7 +97,20 @@ fun LessonScreen(
             containerColor = WarmContainer,
             contentColor = WarmOn,
         ) { MarkdownText(MarkdownParser.parse(lesson.cppComparison)) }
-        QuizSection(questions = lesson.questions, onSubmit = onSubmitQuiz)
+        Card(
+            onClick = onQuizClick,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(Modifier.padding(14.dp)) {
+                Text("✅ 开始随堂测验", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    "共 ${lesson.questions.size} 题 · 交卷即记完成，成绩取历史最好",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+        }
     }
 }
 
