@@ -17,7 +17,7 @@ object KotlinBasics {
 
                 基本类型没有 C++ 那样的隐式窄化转换：`Int` 不会自动变成 `Long`，必须显式调用 `.toLong()`。
                 数字类型：`Int`（32 位）、`Long`（64 位）、`Double`、`Float`、`Boolean`、`Char`。
-                没有 `unsigned` 类型。
+                有 `UInt`、`ULong`、`UShort`、`UByte` 无符号类型（Kotlin 1.9 起 Stable），但日常开发绝大多数场景仍用有符号的 `Int`/`Long`。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -59,10 +59,10 @@ object KotlinBasics {
                     explanation = "val 是只读引用，初始化后不能重新赋值，类似 C++ 的 const。注意：val 引用的对象本身如果是可变类型，内容仍可变。",
                 ),
                 QuizQuestion(
-                    question = "Kotlin 中存在哪种整数类型？",
+                    question = "日常开发中最常用的 Kotlin 整数类型是？",
                     options = listOf("unsigned int", "uint8_t", "Int", "size_t"),
                     correctIndex = 2,
-                    explanation = "Kotlin 只有有符号整数类型：Byte、Short、Int、Long，没有无符号类型（实验性的 UInt 不用于常规开发）。",
+                    explanation = "Kotlin 提供有符号的 Byte、Short、Int、Long，以及无符号的 UByte、UShort、UInt、ULong（1.9 起 Stable），但日常开发绝大多数场景仍用有符号的 Int；\"unsigned int\"、\"size_t\" 是 C++ 的类型名。",
                 ),
             ),
         ),
@@ -848,7 +848,7 @@ object KotlinBasics {
                 CodeExample(
                     description = "函数类型、尾随 lambda 与函数引用：",
                     code = """
-                        fun squareInt(n: Int) = n * n
+                        fun multiply(a: Int, b: Int) = a * b
 
                         val square: (Int) -> Int = { x -> x * x }   // lambda 赋给函数类型变量
                         println(square(5))                           // 25
@@ -856,7 +856,7 @@ object KotlinBasics {
                         fun operate(x: Int, y: Int, op: (Int, Int) -> Int): Int = op(x, y)
 
                         println(operate(3, 4) { a, b -> a + b })     // 7：尾随 lambda 写在括号外
-                        println(operate(3, 4, ::squareInt))          // 12：:: 函数引用也能传
+                        println(operate(3, 4, ::multiply))          // 12：::multiply 函数引用也能传
                     """.trimIndent(),
                 ),
                 CodeExample(
@@ -1127,7 +1127,7 @@ object KotlinBasics {
             cppComparison = """
                 · try/catch/finally 的结构与 C++ 相同：按类型匹配、栈展开、finally 必执行（C++ 用 RAII 表达的部分，这里靠 finally）。
                 · 没有受检异常：不像 Java 要写 throws，也没有 C++ noexcept 那样的规范声明——异常是「未检查」的，文档里说明。
-                · throw 是表达式（Nothing 类型），可以嵌在 Elvis、if 等表达式里；C++ 的 throw 是语句，做不到。
+                · Kotlin 的 throw 类型是 Nothing（一切类型的子类型），可出现在任何需要值的位置（如 Elvis 右侧）；C++ 的 throw 虽也是表达式但类型为 void，只能在极有限的位置（如条件运算符操作数）使用。类比结论不变：Kotlin 的写法更灵活。
                 · 关闭资源别手写 finally：`file.use { }` 等价 RAII，Closeable 资源一律用它，异常安全且代码更短。
             """.trimIndent(),
             questions = listOf(
