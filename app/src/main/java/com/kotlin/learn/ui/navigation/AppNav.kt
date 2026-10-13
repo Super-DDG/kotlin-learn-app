@@ -15,6 +15,7 @@ import com.kotlin.learn.data.content.Curriculum
 import com.kotlin.learn.data.progress.ProgressStore
 import com.kotlin.learn.data.progress.UserProgress
 import com.kotlin.learn.ui.demos.AnimationDemo
+import com.kotlin.learn.ui.demos.ControlsDemo
 import com.kotlin.learn.ui.demos.CounterDemo
 import com.kotlin.learn.ui.demos.DialogDemo
 import com.kotlin.learn.ui.demos.DemoCatalog
@@ -107,6 +108,7 @@ fun AppNav(progressStore: ProgressStore) {
                 "dialogs" -> DialogDemo(item!!, onBack, onLessonClick)
                 "scaffold" -> ScaffoldDemo(item!!, onBack, onLessonClick)
                 "login-form" -> LoginFormDemo(item!!, onBack, onLessonClick)
+                "controls" -> ControlsDemo(item!!, onBack, onLessonClick)
                 else -> NotFoundScreen()
             }
         }

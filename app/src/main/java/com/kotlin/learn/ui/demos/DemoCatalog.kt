@@ -34,7 +34,7 @@ data class DemoItem(
     val explanation: String,
 )
 
-/** Demo 目录：首批 3 个（counter/todo/animation），后续迭代再加。 */
+/** Demo 目录：共 7 个 demo（counter/todo/animation/dialogs/scaffold/login-form/controls）。 */
 object DemoCatalog {
     val items: List<DemoItem> = listOf(
         DemoItem(
@@ -90,6 +90,16 @@ object DemoCatalog {
             lessonIds = listOf("compose-13"),
             explanation = "输入框没有\"自己记住内容\"：text 状态是唯一事实源，onValueChange 把新值写回状态，" +
                 "输入框只是状态的投影。校验在点击登录时集中做，错误也是一条状态——整个表单没有一处\"直接改 UI\"。",
+        ),
+        DemoItem(
+            id = "controls",
+            title = "开关与滑块",
+            emoji = "🎛",
+            description = "Switch/Slider/FilterChip 三种控制状态模型",
+            lessonIds = listOf("compose-14"),
+            explanation = "三种组件对应三种状态模型：Switch 是布尔、Slider 是区间内的浮点、" +
+                "FilterChip 多选是集合的增删。注意预览卡的透明度直接由 Slider 的值算出——" +
+                "数据一变，UI 自动跟着变，没有任何\"刷新\"代码。",
         ),
     )
 
