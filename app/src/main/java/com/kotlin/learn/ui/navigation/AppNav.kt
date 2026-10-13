@@ -1,5 +1,9 @@
 package com.kotlin.learn.ui.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -36,7 +40,14 @@ object Routes {
 fun AppNav(progressStore: ProgressStore) {
     val navController = rememberNavController()
     val scope = rememberCoroutineScope()
-    NavHost(navController = navController, startDestination = Routes.HOME) {
+    NavHost(
+        navController = navController,
+        startDestination = Routes.HOME,
+        enterTransition = { fadeIn(tween(220)) + slideInVertically(tween(220)) { it / 24 } },
+        exitTransition = { fadeOut(tween(180)) },
+        popEnterTransition = { fadeIn(tween(220)) },
+        popExitTransition = { fadeOut(tween(180)) },
+    ) {
         composable(Routes.HOME) { backStackEntry ->
             val progress by progressStore.progress.collectAsStateWithLifecycle(initialValue = UserProgress.EMPTY)
             HomeScreen(
