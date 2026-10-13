@@ -12,10 +12,20 @@ object AndroidCore {
             id = "android-01",
             title = "什么是 Activity",
             concept = """
-                Activity 是 Android 四大组件之一，代表一个可以与用户交互的"单一屏幕"。它既是 UI 容器，也是系统的管理单元：你只是声明一个类继承 ComponentActivity，但它的创建、恢复、销毁都由系统决定，不是你自己 new 出来的。
-                与 C++ 桌面程序最大的差别是：Activity 的实例随时可能被系统销毁重建（如旋转屏幕、内存不足时回收），所以不能依赖成员变量长期保存界面状态。
-                本 App 使用 Jetpack Compose，Activity 退化为"宿主"：在 onCreate 里调用 setContent { ... } 挂载 Compose 界面，屏幕上的内容全部交给 Composable 函数渲染。
-                每个 Activity 必须在 AndroidManifest.xml 中声明，漏声明会导致启动时直接崩溃。
+                Activity 是 Android 四大组件之一，代表一个可以与用户交互的**单一屏幕**：既是 UI 容器，也是系统的管理单元。
+
+                ## 你只声明，系统创建
+
+                你只是声明一个类继承 `ComponentActivity`，但它的**创建、恢复、销毁都由系统决定**，不是你自己 new 出来的。
+                每个 Activity 必须在 `AndroidManifest.xml` 中声明，**漏声明会导致启动时直接崩溃**。
+
+                ## 与 C++ 桌面程序最大的差别
+
+                Activity 的实例**随时可能被系统销毁重建**（如旋转屏幕、内存不足时回收），所以**不能依赖成员变量长期保存界面状态**。
+
+                ## Compose 时代：Activity 退化为宿主
+
+                本 App 使用 Jetpack Compose：在 `onCreate` 里调用 `setContent { ... }` 挂载 Compose 界面，屏幕上的内容全部交给 Composable 函数渲染。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -48,10 +58,10 @@ object AndroidCore {
                 ),
             ),
             cppComparison = """
-                · Activity ≈ 一个带系统托管生命周期的"窗口类"：类似 MFC 的 CWnd 或 Qt 的 QWidget，但对象的构造与析构时机由操作系统决定。
+                · Activity ≈ 一个带系统托管生命周期的"窗口类"：类似 MFC 的 `CWnd` 或 Qt 的 `QWidget`，但对象的构造与析构时机由操作系统决定。
                 · 不能 `new MainActivity()` 然后自己显示——必须通过 Intent 向系统发起请求，由系统负责实例化。
                 · 旋转屏幕默认销毁重建 Activity：相当于"你的窗口对象随时可能被析构再重新构造一次"，成员变量的直觉在这里失效。
-                · 想跨"重建"保存状态，用 ViewModel 或 onSaveInstanceState，而不是成员变量。
+                · 想跨"重建"保存状态，用 **ViewModel 或 onSaveInstanceState**，而不是成员变量。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -104,10 +114,24 @@ object AndroidCore {
             id = "android-02",
             title = "Activity 生命周期",
             concept = """
-                Activity 从生到死走一条固定的回调链：onCreate() → onStart() → onResume() → 运行中 → onPause() → onStop() → onDestroy()。onCreate 只执行一次，适合做初始化；onStart/onStop 对应"是否可见"，onResume/onPause 对应"是否在前台可交互"。
-                生命周期由系统托管：来电时 onPause → onStop，返回时 onRestart → onStart → onResume，用户退出或系统回收时 onDestroy。
-                最常见的坑是配置变更（如旋转屏幕）默认销毁并重建整个 Activity，onCreate 会重新执行，界面临时数据丢失。
-                Compose 时代的对策：跨重建的数据放 ViewModel，小体量 UI 状态用 rememberSaveable；调试时在每条回调里打日志观察顺序。
+                Activity 从生到死走一条**固定的回调链**，生命周期由系统托管，不由你控制。
+
+                ## 回调顺序
+
+                `onCreate()` → `onStart()` → `onResume()` → 运行中 → `onPause()` → `onStop()` → `onDestroy()`。
+
+                - `onCreate` **只执行一次**，适合做初始化
+                - `onStart`/`onStop` 对应**是否可见**，`onResume`/`onPause` 对应**是否在前台可交互**
+                - 来电时 `onPause` → `onStop`，返回时 `onRestart` → `onStart` → `onResume`，用户退出或系统回收时 `onDestroy`
+
+                ## 最常见的坑：配置变更
+
+                配置变更（如旋转屏幕）默认**销毁并重建整个 Activity**，`onCreate` 会重新执行，界面临时数据丢失。
+
+                ## Compose 时代的对策
+
+                - 跨重建的数据放 **ViewModel**，小体量 UI 状态用 `rememberSaveable`
+                - 调试时在每条回调里打日志观察顺序
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -143,9 +167,9 @@ object AndroidCore {
             ),
             cppComparison = """
                 · 生命周期是一整套"系统回调你的虚函数"：你只 override，调用方永远是系统而不是你——和 C++ 里你自己控制构造/析构顺序完全不同。
-                · onResume/onPause ≈ 窗口获得/失去激活；onStop ≈ 窗口被完全遮挡。
-                · 每个回调都必须先调用 super.xxx()，等价于"必须调用基类实现"，漏掉会直接崩溃。
-                · 旋转重建 ≈ 析构后立刻重新构造同一个窗口：C++ 中"成员变量还在"的假设在 Android 上不成立。
+                · `onResume`/`onPause` ≈ 窗口获得/失去激活；`onStop` ≈ 窗口被完全遮挡。
+                · 每个回调都必须先调用 `super.xxx()`，等价于"**必须调用基类实现**"，漏掉会直接崩溃。
+                · 旋转重建 ≈ 析构后立刻重新构造同一个窗口：C++ 中"成员变量还在"的假设在 Android 上**不成立**。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -198,10 +222,22 @@ object AndroidCore {
             id = "android-03",
             title = "布局系统与 Compose 的关系",
             concept = """
-                Android 历史上有两套 UI 方案：老的命令式 View/XML 体系（LinearLayout、ConstraintLayout 等布局写在 XML 里，代码中 findViewById 拿到控件再逐个改属性），以及新的声明式 Jetpack Compose（直接用 Kotlin 函数描述界面）。
-                Compose 没有"布局文件"的概念，界面就是一个个 @Composable 函数：状态变化时框架自动重新执行受影响的函数（重组），UI 随数据自动更新。
-                对 C++ 程序员来说，这更像"UI = f(state)"：你只声明状态到界面的映射，不再手动调用 setText() 之类的命令式更新。
-                本 App 完全使用 Compose；但阅读老项目时仍会遇到 View 体系——RecyclerView、Fragment、findViewById 这些术语都来自那套系统。
+                Android 历史上有**两套 UI 方案**，阅读老项目时会同时遇到它们。
+
+                ## 老方案：命令式 View/XML 体系
+
+                `LinearLayout`、`ConstraintLayout` 等布局写在 XML 里，代码中 `findViewById` 拿到控件再逐个改属性。
+                `RecyclerView`、`Fragment`、`findViewById` 这些术语都来自那套系统。
+
+                ## 新方案：声明式 Jetpack Compose
+
+                - Compose **没有"布局文件"**的概念，界面就是一个个 `@Composable` 函数
+                - 状态变化时框架**自动重新执行受影响的函数（重组）**，UI 随数据自动更新
+                - 本 App 完全使用 Compose
+
+                ## 一句话理解：UI = f(state)
+
+                你只声明**状态到界面的映射**，不再手动调用 `setText()` 之类的命令式更新。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -233,9 +269,9 @@ object AndroidCore {
             ),
             cppComparison = """
                 · Compose 之于 View，类似即时模式 UI（如 Dear ImGui）之于传统 retained 控件：函数被反复调用来描述界面，而不是构造一次就常驻的控件树。
-                · @Composable 函数不是"构造一次就固定"的 C++ 对象——它会在重组时被再次调用，别在里面写一次性的副作用。
-                · remember ≈ 框架管理的缓存槽：把变量放进去，重组时值保留；普通局部变量每次重组都会重置。
-                · 重组是"乐观"的，可能被中断取消：耗时操作和副作用要放到事件回调或协程里，不要直接写在 Composable 函数体中。
+                · `@Composable` 函数不是"构造一次就固定"的 C++ 对象——它会在重组时被再次调用，别在里面写一次性的副作用。
+                · `remember` ≈ 框架管理的缓存槽：把变量放进去，重组时值保留；普通局部变量每次重组都会重置。
+                · 重组是"乐观"的，可能被中断取消：**耗时操作和副作用要放到事件回调或协程里**，不要直接写在 Composable 函数体中。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -278,10 +314,21 @@ object AndroidCore {
             id = "android-04",
             title = "Intent 与页面跳转",
             concept = """
-                Intent 是一个描述"想做什么"的消息对象：既用来在本 App 内启动另一个 Activity（显式 Intent），也用来请求任意 App 完成某个动作，例如"打开这个网址"（隐式 Intent）。
-                显式 Intent 直接指名目标类：Intent(this, DetailActivity::class.java)；隐式 Intent 只描述 action 和数据，由系统去匹配能处理它的组件。
-                携带数据用 putExtra(key, value)，目标页通过 intent.getStringExtra("key") 等读取——底层是一个可在进程边界传递的 Bundle 键值对。
-                接收"下一个页面返回的结果"要用 Activity Result API（registerForActivityResult + launch）；老教程里的 startActivityForResult / onActivityResult 已废弃，不要学。
+                Intent 是一个描述**"想做什么"**的消息对象：既用来启动组件，也用来请求其他 App 完成某个动作。
+
+                ## 显式与隐式 Intent
+
+                - **显式 Intent** 直接指名目标类，用于在本 App 内启动另一个 Activity：`Intent(this, DetailActivity::class.java)`
+                - **隐式 Intent** 只描述 action 和数据（例如"打开这个网址"），由系统去匹配能处理它的组件
+
+                ## 携带数据
+
+                - 写入用 `putExtra(key, value)`，目标页通过 `intent.getStringExtra("key")` 等读取
+                - 底层是一个可在**进程边界传递**的 `Bundle` 键值对
+
+                ## 接收"下一个页面返回的结果"
+
+                用 **Activity Result API**（`registerForActivityResult` + `launch`）；老教程里的 `startActivityForResult` / `onActivityResult` **已废弃，不要学**。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -317,8 +364,8 @@ object AndroidCore {
             cppComparison = """
                 · Intent ≈ 发给操作系统的消息：像投递一条请求让系统去创建目标窗口，而不是自己 new 出目标对象。
                 · 显式 Intent 是"点名调用"，隐式 Intent 是"按能力查找"——类似用接口契约找实现类。
-                · putExtra 的数据放进 Bundle 跨组件边界传递：只能是基本类型、String、Parcelable 等可序列化类型，不能随手塞一个对象指针。
-                · 老教程的 startActivityForResult/onActivityResult 已废弃；现代写法一律是 Activity Result API 的注册回调模式。
+                · `putExtra` 的数据放进 Bundle 跨组件边界传递：只能是基本类型、String、Parcelable 等**可序列化类型**，不能随手塞一个对象指针。
+                · 老教程的 `startActivityForResult`/`onActivityResult` **已废弃**；现代写法一律是 Activity Result API 的注册回调模式。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -366,10 +413,25 @@ object AndroidCore {
             id = "android-05",
             title = "资源系统（res/）",
             concept = """
-                res/ 目录存放一切非代码资产：values/strings.xml 字符串、drawable/ 图片与矢量图、mipmap/ 应用图标、values/ 颜色与主题、xml/ 配置文件等。构建时编译器为每个资源生成整数 ID，代码通过 R 类引用（如 R.string.app_name）。
-                资源系统的精髓是"限定符变体"：values-zh/ 放中文文案、drawable-xxhdpi/ 放高分辨率图片，系统运行时按设备语言、屏幕密度自动选择，代码里不用写任何 if。
-                尺寸单位要用 dp（密度无关像素）和 sp（还会随用户字体大小缩放，专用于文字），不要用 px 硬编码，否则在不同屏幕上观感不一致。
-                Compose 中通过 stringResource(R.string.title)、painterResource(R.drawable.icon) 等 API 访问资源。
+                `res/` 目录存放一切**非代码资产**。构建时编译器为每个资源生成整数 ID，代码通过 `R` 类引用（如 `R.string.app_name`）。
+
+                ## 资源都在哪
+
+                - `values/strings.xml`：字符串；`values/`：颜色与主题
+                - `drawable/`：图片与矢量图；`mipmap/`：应用图标
+                - `xml/`：配置文件
+
+                ## 精髓：限定符变体
+
+                - `values-zh/` 放中文文案，`drawable-xxhdpi/` 放高分辨率图片
+                - 系统运行时按设备**语言、屏幕密度自动选择**，代码里不用写任何 if
+
+                ## 尺寸单位：dp 与 sp
+
+                - **dp** 是密度无关像素；**sp** 还会随用户字体大小缩放，专用于文字
+                - 不要用 `px` 硬编码，否则在不同屏幕上观感不一致
+
+                Compose 中通过 `stringResource(R.string.title)`、`painterResource(R.drawable.icon)` 等 API 访问资源。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -403,10 +465,10 @@ object AndroidCore {
                 ),
             ),
             cppComparison = """
-                · R 类 ≈ 编译期自动生成的资源 ID 常量表，类似构建工具替你维护的枚举；引用的资源不存在会直接编译报错，比运行期查字符串安全。
-                · 限定符变体 ≈ "运行时按环境自动选择的资源重载"：把 if(语言/密度) 的分支从代码里挪进了文件系统。
-                · dp/sp 与 px 的关系，类似逻辑坐标与物理像素的关系——Win32 里用 DPI 缩放解决的是同一个问题。
-                · 资源 ID 是 int 不是指针：真正的数据由系统在打包后按需加载。
+                · `R` 类 ≈ 编译期自动生成的资源 ID 常量表，类似构建工具替你维护的枚举；引用的资源不存在会**直接编译报错**，比运行期查字符串安全。
+                · 限定符变体 ≈ "运行时按环境自动选择的资源重载"：把 `if(语言/密度)` 的分支从代码里挪进了文件系统。
+                · `dp`/`sp` 与 px 的关系，类似逻辑坐标与物理像素的关系——Win32 里用 DPI 缩放解决的是同一个问题。
+                · 资源 ID 是 `int` 不是指针：真正的数据由系统在打包后按需加载。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -449,10 +511,22 @@ object AndroidCore {
             id = "android-06",
             title = "AndroidManifest.xml",
             concept = """
-                AndroidManifest.xml 是 App 的"身份证 + 说明书"：固定放在 app/src/main/ 下，每个模块必有一份。系统在安装和运行前都靠它了解这个 App 有哪些组件、需要什么权限、入口在哪里。
-                四大组件（Activity、Service、BroadcastReceiver、ContentProvider）都必须在这里声明，漏声明的组件无法启动。对外可被其他 App 启动的组件还要显式设置 android:exported="true"。
-                <intent-filter> 声明组件能响应哪些隐式 Intent；应用入口就是那个带 MAIN action 与 LAUNCHER category 的 Activity，它决定了桌面上有没有图标。
-                权限（<uses-permission>）、硬件特性（<uses-feature>）也声明在这里；applicationId、minSdk 等则写在 build.gradle.kts 中，构建时两者会合并。
+                AndroidManifest.xml 是 App 的**"身份证 + 说明书"**：固定放在 `app/src/main/` 下，每个模块必有一份。系统在安装和运行前都靠它了解这个 App 有哪些组件、需要什么权限、入口在哪里。
+
+                ## 组件必须声明
+
+                - 四大组件（Activity、Service、BroadcastReceiver、ContentProvider）都必须在这里声明，**漏声明的组件无法启动**
+                - 对外可被其他 App 启动的组件还要显式设置 `android:exported="true"`
+
+                ## 入口与 intent-filter
+
+                - `<intent-filter>` 声明组件能响应哪些隐式 Intent
+                - 应用入口就是那个带 **MAIN action 与 LAUNCHER category** 的 Activity，它决定了桌面上有没有图标
+
+                ## 与 build.gradle.kts 的分工
+
+                - 权限（`<uses-permission>`）、硬件特性（`<uses-feature>`）也声明在 Manifest
+                - `applicationId`、`minSdk` 等则写在 `build.gradle.kts` 中，构建时两者会合并
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -484,9 +558,9 @@ object AndroidCore {
             ),
             cppComparison = """
                 · Manifest ≈ 链接期符号表 + 运行配置清单：组件不声明就等于"符号未链接"，一启动就崩。
-                · <intent-filter> ≈ 把"我能处理这类请求"注册进系统能力表，其他 App 才能按契约找到你。
-                · 在 Manifest 声明权限只是"申请意愿"，危险权限还需要运行时用户点头（见下一课），两步缺一不可。
-                · applicationId、minSdk 在 build.gradle.kts 里配置而不在 Manifest 里——构建时 Gradle 会把配置合并注入。
+                · `<intent-filter>` ≈ 把"我能处理这类请求"注册进系统能力表，其他 App 才能按契约找到你。
+                · 在 Manifest 声明权限只是"申请意愿"，**危险权限还需要运行时用户点头**（见下一课），两步缺一不可。
+                · `applicationId`、`minSdk` 在 build.gradle.kts 里配置而不在 Manifest 里——构建时 Gradle 会把配置合并注入。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -534,10 +608,25 @@ object AndroidCore {
             id = "android-07",
             title = "权限模型",
             concept = """
-                Android 权限分几类：普通权限（如 INTERNET）在 Manifest 声明后自动授予；危险权限（定位、相机、麦克风、通讯录等敏感数据）从 Android 6.0 起必须在运行时向用户弹窗请求，用户可以拒绝。
-                标准流程三步：Manifest 里 <uses-permission> 声明 → 用 ContextCompat.checkSelfPermission 检查 → 未授权则用 Activity Result API 发起请求。
-                Android 10 起进一步收紧：位置只支持"仅在使用该应用时允许"，后台定位要单独申请；Android 11 起位置对话框多了"仅这一次"的一次性授权选项。权限模型逐年趋严，设计功能时要按"随时会被拒"来做降级方案。
-                Compose 中用 rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) 发起请求，根据授权结果切换 UI。
+                Android 权限分几类，权限模型**逐年趋严**：设计功能时要按**"随时会被拒"**来做降级方案。
+
+                ## 普通权限与危险权限
+
+                - **普通权限**（如 `INTERNET`）：在 Manifest 声明后自动授予
+                - **危险权限**（定位、相机、麦克风、通讯录等敏感数据）：从 **Android 6.0** 起必须在运行时向用户弹窗请求，用户**可以拒绝**
+
+                ## 标准流程三步
+
+                1. Manifest 里 `<uses-permission>` 声明
+                2. 用 `ContextCompat.checkSelfPermission` 检查
+                3. 未授权则用 Activity Result API 发起请求
+
+                Compose 中用 `rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission())` 发起请求，根据授权结果切换 UI。
+
+                ## 版本演进
+
+                - **Android 10 起**进一步收紧：位置只支持"仅在使用该应用时允许"，后台定位要**单独申请**
+                - **Android 11 起**：位置对话框多了"仅这一次"的一次性授权选项
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -565,9 +654,9 @@ object AndroidCore {
             ),
             cppComparison = """
                 · 危险权限像"每次使用前要用户签字的授权书"，不是 C++ 桌面程序"装完即全权"的思路。
-                · checkSelfPermission ≈ 运行时能力探测：永远先查询再使用，不要凭"我申请过"的假设。
+                · `checkSelfPermission` ≈ 运行时能力探测：**永远先查询再使用**，不要凭"我申请过"的假设。
                 · 权限对话框由系统弹出，用户可能永远拒绝——业务逻辑必须按"拒绝也能优雅降级"设计。
-                · INTERNET 属于普通权限：Manifest 声明即可用，不会弹窗——新手常见误解是以为联网也要运行时请求。
+                · `INTERNET` 属于普通权限：Manifest 声明即可用，不会弹窗——新手常见误解是以为联网也要运行时请求。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -615,10 +704,23 @@ object AndroidCore {
             id = "android-08",
             title = "Context 是什么",
             concept = """
-                Context 是 Android 最核心的抽象之一：它是"应用环境/系统服务访问句柄"，启动 Activity、读取资源、获取系统服务（通知、布局、数据库）都要经过它。
-                常见实现：Activity 本身就是 Context，Application 是进程内全局唯一的 Context，Service 也是。Activity 的 Context 带主题与界面能力；applicationContext 的生命周期与进程一样长。
-                经典大坑：把 Activity 的 Context 存进静态变量或长生命周期单例，Activity 销毁后仍被持有而无法回收——这就是 Android 最常见的内存泄漏。
-                原则：需要长期持有的场景一律用 applicationContext；Compose 里需要 Context 时用 LocalContext.current 取。
+                Context 是 Android 最核心的抽象之一：**"应用环境 / 系统服务访问句柄"**。
+
+                ## 它能做什么
+
+                启动 Activity、读取资源、获取系统服务（通知、布局、数据库）**都要经过它**。
+
+                ## 常见实现
+
+                - **Activity** 本身就是 Context，带主题与界面能力
+                - **Application** 是进程内全局唯一的 Context，`applicationContext` 的生命周期与进程一样长
+                - **Service** 也是 Context
+
+                ## 经典大坑：内存泄漏
+
+                把 Activity 的 Context 存进**静态变量或长生命周期单例**，Activity 销毁后仍被持有而无法回收——这就是 Android 最常见的内存泄漏。
+
+                原则：需要**长期持有**的场景一律用 `applicationContext`；Compose 里需要 Context 时用 `LocalContext.current` 取。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -648,9 +750,9 @@ object AndroidCore {
             ),
             cppComparison = """
                 · Context ≈ "系统服务访问句柄"：类似持有指向 OS 服务管理器的指针，几乎一切系统能力都从它取。
-                · Activity/Service/Application 都是 Context 的子类——像一组生命周期长短不同的句柄，用错层级就出事。
-                · 静态持有 Activity Context ≈ 把栈对象地址存进全局指针：对象析构后你仍握着它，内存泄漏。
-                · getApplicationContext() 相当于官方提供的"长寿命句柄"，是跨对象持有时唯一正确的选择。
+                · Activity/Service/Application 都是 Context 的子类——像一组**生命周期长短不同的句柄**，用错层级就出事。
+                · 静态持有 Activity Context ≈ 把栈对象地址存进全局指针：对象析构后你仍握着它，**内存泄漏**。
+                · `getApplicationContext()` 相当于官方提供的"长寿命句柄"，是跨对象持有时唯一正确的选择。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -703,10 +805,22 @@ object AndroidCore {
             id = "android-09",
             title = "App 进程与主线程",
             concept = """
-                每个 App 默认运行在自己独立的 Linux 进程里，进程内有一个 ART 虚拟机实例；系统会按内存压力随时杀掉后台进程，用户毫无感知——所以永远不要假设进程常驻，重要数据要主动持久化。
-                主线程（UI 线程）上跑着一个事件循环：Looper 不停地从 MessageQueue 取消息并分发，输入事件、生命周期回调、界面绘制全部在这条线程处理。这个模型与 Win32 的消息循环几乎同构。
-                在主线程做网络请求会直接抛 NetworkOnMainThreadException；做耗时磁盘 IO 则可能触发 ANR（应用无响应）：输入事件 5 秒内没处理完，系统就弹出"无响应"对话框。
-                现代解法是 Kotlin 协程：耗时工作放到 Dispatchers.IO/Default，完成后切回 Dispatchers.Main 更新 UI。
+                每个 App 默认运行在**自己独立的 Linux 进程**里，进程内有一个 ART 虚拟机实例。
+
+                ## 进程随时可能被杀
+
+                系统会按内存压力随时杀掉后台进程，用户毫无感知——所以**永远不要假设进程常驻**，重要数据要主动持久化。
+
+                ## 主线程：一条事件循环
+
+                - 主线程（UI 线程）上跑着一个事件循环：**Looper** 不停地从 `MessageQueue` 取消息并分发，输入事件、生命周期回调、界面绘制**全部在这条线程处理**
+                - 这个模型与 Win32 的消息循环**几乎同构**
+                - 在主线程做网络请求会直接抛 `NetworkOnMainThreadException`
+                - 做耗时磁盘 IO 则可能触发 **ANR**（应用无响应）：输入事件 **5 秒**内没处理完，系统就弹出"无响应"对话框
+
+                ## 现代解法：Kotlin 协程
+
+                耗时工作放到 `Dispatchers.IO`/`Default`，完成后切回 `Dispatchers.Main` 更新 UI。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -725,9 +839,9 @@ object AndroidCore {
                 ),
             ),
             cppComparison = """
-                · 主线程 ≈ Win32 消息循环线程：GetMessage/DispatchMessage 换成了 Looper/Handler，本质是同一个事件循环模型。
-                · ANR ≈ 消息队列被堵死超过 5 秒，系统判定窗口僵死；C++ GUI 里长任务卡界面是同一种病，药方也一样——别堵消息循环。
-                · 进程随时可能被杀 ≈ "操作系统可能随时析构你的整个进程"：持久化必须在关键时机主动完成，不能等"退出时保存"。
+                · 主线程 ≈ Win32 消息循环线程：`GetMessage`/`DispatchMessage` 换成了 `Looper`/`Handler`，本质是同一个事件循环模型。
+                · ANR ≈ 消息队列被堵死超过 5 秒，系统判定窗口僵死；C++ GUI 里长任务卡界面是同一种病，药方也一样——**别堵消息循环**。
+                · 进程随时可能被杀 ≈ "操作系统可能随时析构你的整个进程"：**持久化必须在关键时机主动完成**，不能等"退出时保存"。
                 · 协程 ≈ 轻量级可挂起的任务：比裸 pthread 线程池便宜得多，作用域自动传播取消，避免手写线程同步。
             """.trimIndent(),
             questions = listOf(
@@ -776,10 +890,22 @@ object AndroidCore {
             id = "android-10",
             title = "Gradle 构建体系",
             concept = """
-                Gradle 是 Android 官方构建系统：用 Kotlin 脚本（build.gradle.kts）声明"怎么构建"，构建时按依赖图调度任务——角色类似 C++ 世界的 CMake，但配置本身就是代码。
-                模块级 build.gradle.kts 里最关键的配置：compileSdk（用哪个版本的 API 编译）、minSdk（最低支持到哪个系统版本）、targetSdk（声明已适配到的版本，直接影响系统对你的行为约束）、以及依赖列表。
-                新项目用 Version Catalog（gradle/libs.versions.toml）集中管理依赖与版本号，多模块共享一份"版本真相"，避免版本漂移。
-                buildTypes 构建变体默认有 debug（可调试、自动用 debug 签名）与 release（优化混淆、需正式签名）：同一份代码打包出的不同产物，上架商店用的是 release。
+                Gradle 是 Android 官方构建系统：用 Kotlin 脚本（`build.gradle.kts`）声明**"怎么构建"**，构建时按依赖图调度任务——角色类似 C++ 世界的 CMake，但**配置本身就是代码**。
+
+                ## 模块级最关键的配置
+
+                - `compileSdk`：用哪个版本的 API 编译
+                - `minSdk`：最低支持到哪个系统版本
+                - `targetSdk`：声明已适配到的版本，**直接影响系统对你的行为约束**
+                - 以及依赖列表
+
+                ## Version Catalog：版本真相
+
+                新项目用 `gradle/libs.versions.toml` 集中管理依赖与版本号，多模块共享一份**"版本真相"**，避免版本漂移。
+
+                ## buildTypes：构建变体
+
+                默认有 **debug**（可调试、自动用 debug 签名）与 **release**（优化混淆、需正式签名）：同一份代码打包出的不同产物，**上架商店用的是 release**。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -823,9 +949,9 @@ object AndroidCore {
                 ),
             ),
             cppComparison = """
-                · Gradle 之于 Android ≈ CMake 之于 C++：都是声明式构建脚本；区别是 Gradle 的配置即代码（Kotlin/Groovy），且自带依赖管理与中央仓库。
-                · minSdk ≈ 最低支持的 OS 版本；compileSdk ≈ 用哪套"头文件"编译；targetSdk 决定系统对你启用哪些新行为约束——三者各管一头，别混。
-                · buildTypes ≈ Debug/Release 构建配置；productFlavors（多渠道）类似交叉编译的多目标平台。
+                · Gradle 之于 Android ≈ CMake 之于 C++：都是声明式构建脚本；区别是 Gradle 的**配置即代码**（Kotlin/Groovy），且自带依赖管理与中央仓库。
+                · `minSdk` ≈ 最低支持的 OS 版本；`compileSdk` ≈ 用哪套"头文件"编译；`targetSdk` 决定系统对你启用哪些新行为约束——**三者各管一头，别混**。
+                · `buildTypes` ≈ Debug/Release 构建配置；`productFlavors`（多渠道）类似交叉编译的多目标平台。
                 · Version Catalog ≈ 集中的版本号头文件：所有模块 include 同一份，杜绝各自写版本导致的漂移。
             """.trimIndent(),
             questions = listOf(
@@ -874,10 +1000,23 @@ object AndroidCore {
             id = "android-11",
             title = "调试技巧",
             concept = """
-                Logcat 是 Android 最重要的调试输出通道：android.util.Log 的五级日志 Log.v / Log.d / Log.i / Log.w / Log.e（冗余→错误）都汇集于此，可按 tag、级别、包名过滤。
-                惯例是每个类配一个 TAG 常量（private const val TAG = "MainActivity"）；注意 Log.d 这类调用在 release 包里不会自动消失，敏感日志要自己控制或交给统一日志库。
-                断点调试体验与 C++ 基本一致：Android Studio 里点行号挂断点、Debug 模式启动，命中后可查看变量、单步执行，还支持条件断点与日志断点（命中时只打日志不停下）。
-                进阶工具：StrictMode 抓"主线程做 IO"这类违规操作，Profiler 看内存/CPU/网络，Layout Inspector 与 Compose Preview 检查界面。
+                **Logcat** 是 Android 最重要的调试输出通道，断点调试体验与 C++ 基本一致。
+
+                ## Logcat 与五级日志
+
+                - `android.util.Log` 的五级日志 `Log.v` / `Log.d` / `Log.i` / `Log.w` / `Log.e`（冗余→错误）都汇集于此，可按 **tag、级别、包名**过滤
+                - 惯例是每个类配一个 TAG 常量（`private const val TAG = "MainActivity"`）
+                - 注意 `Log.d` 这类调用在 release 包里**不会自动消失**，敏感日志要自己控制或交给统一日志库
+
+                ## 断点调试
+
+                Android Studio 里点行号挂断点、Debug 模式启动，命中后可查看变量、单步执行，还支持**条件断点**与**日志断点**（命中时只打日志不停下）。
+
+                ## 进阶工具
+
+                - **StrictMode**：抓"主线程做 IO"这类违规操作
+                - **Profiler**：看内存/CPU/网络
+                - **Layout Inspector** 与 **Compose Preview**：检查界面
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -913,7 +1052,7 @@ object AndroidCore {
             cppComparison = """
                 · Logcat ≈ 系统级日志总线：不只你的 App，系统进程与其他应用的日志也能看到，比单纯看自己程序的控制台输出信息量大得多。
                 · TAG 过滤 ≈ 结构化的日志分类，替代在巨型日志文件里 grep。
-                · StrictMode ≈ Debug 版运行时检查器：把"主线程干重活"这类坏味道变成显式日志，思路类似打开更严格的运行时检查。
+                · `StrictMode` ≈ Debug 版运行时检查器：把"主线程干重活"这类坏味道变成显式日志，思路类似打开更严格的运行时检查。
                 · ANR 时系统会留下 trace（记录卡住时的调用栈）≈ 轻量版的核心转储，直接看主线程卡在哪一行。
             """.trimIndent(),
             questions = listOf(
@@ -957,19 +1096,28 @@ object AndroidCore {
             id = "android-12",
             title = "常见术语表",
             concept = """
-                模块二到此收尾。下面是 Android 开发最高频的术语，每个一句话，建议当检查清单用：
-                · Activity：一个可交互的"屏幕"，生命周期由系统托管。
-                · Fragment：Activity 内可复用的子界面模块，有自己的生命周期；Compose 时代新项目已少用。
-                · View / ViewGroup：老 UI 体系的控件与容器（TextView、LinearLayout 等）。
-                · Composable：Compose 声明式 UI 的函数单位，在 Compose 世界里替代 View 的角色。
-                · Context：应用环境句柄，访问系统服务、资源、启动组件的统一入口。
-                · Intent：组件之间"想做什么"的消息对象，用于启动 Activity/Service、发送广播。
-                · Toast / Snackbar：轻量提示；Toast 系统级弹出自动消失，Snackbar 在界面内、可带操作按钮。
-                · APK / AAB：Android 安装包与上架格式；AAB 交给商店按设备拆分成更小的下载包。
-                · SDK / NDK：官方开发工具包（Java/Kotlin API）；NDK 用于 C/C++ 开发，通过 JNI 与 Kotlin 互调。
-                · ART：Android 运行时，执行 DEX 字节码；前身是 Dalvik。
-                · AAR / JAR：Android 库包（代码 + 资源）与纯 Java 库包。
-                · Gradle / AGP：官方构建工具，以及其上的 Android 构建插件。
+                模块二到此收尾。下面是 Android 开发最高频的术语，每个一句话，建议当检查清单用。
+
+                ## 组件与界面
+
+                - **Activity**：一个可交互的"屏幕"，生命周期由系统托管。
+                - **Fragment**：Activity 内可复用的子界面模块，有自己的生命周期；Compose 时代新项目已少用。
+                - **View / ViewGroup**：老 UI 体系的控件与容器（TextView、LinearLayout 等）。
+                - **Composable**：Compose 声明式 UI 的函数单位，在 Compose 世界里替代 View 的角色。
+
+                ## 环境与通信
+
+                - **Context**：应用环境句柄，访问系统服务、资源、启动组件的统一入口。
+                - **Intent**：组件之间"想做什么"的消息对象，用于启动 Activity/Service、发送广播。
+                - **Toast / Snackbar**：轻量提示；Toast 系统级弹出自动消失，Snackbar 在界面内、可带操作按钮。
+
+                ## 包格式与工具链
+
+                - **APK / AAB**：Android 安装包与上架格式；AAB 交给商店按设备拆分成更小的下载包。
+                - **SDK / NDK**：官方开发工具包（Java/Kotlin API）；NDK 用于 C/C++ 开发，通过 JNI 与 Kotlin 互调。
+                - **ART**：Android 运行时，执行 DEX 字节码；前身是 Dalvik。
+                - **AAR / JAR**：Android 库包（代码 + 资源）与纯 Java 库包。
+                - **Gradle / AGP**：官方构建工具，以及其上的 Android 构建插件。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -997,7 +1145,7 @@ object AndroidCore {
                 ),
             ),
             cppComparison = """
-                · Context ≈ 系统服务句柄，Intent ≈ 组件间消息，Activity ≈ 系统托管的窗口类——这三个词是 Android 的一切底座。
+                · Context ≈ 系统服务句柄，Intent ≈ 组件间消息，Activity ≈ 系统托管的窗口类——**这三个词是 Android 的一切底座**。
                 · SDK vs NDK ≈ 用官方高级 API vs 用 C/C++ 贴近底层（走 JNI 绑定），类似 Windows 上 C# 与 C++ 的分工。
                 · ART ≈ Android 版的 JVM/CLR：DEX 字节码按 AOT + JIT 混合执行；Dalvik 是它的前任。
                 · APK/AAB ≈ 安装包格式：APK 是可直接安装的成品，AAB 是"源包"，商店按设备 CPU/语言/屏幕拆分后下发。
