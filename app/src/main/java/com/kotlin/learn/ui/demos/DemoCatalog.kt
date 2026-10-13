@@ -103,7 +103,7 @@ object DemoCatalog {
         ),
     )
 
-    /** 按demoId 查找；无效 id 返回 null（UI 显示兜底页）。 */
+    /** 按 demoId 查找；无效 id 返回 null（UI 显示兜底页）。 */
     fun find(demoId: String): DemoItem? = items.firstOrNull { it.id == demoId }
 }
 

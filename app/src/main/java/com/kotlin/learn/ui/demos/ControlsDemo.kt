@@ -16,7 +16,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,7 +35,7 @@ fun ControlsDemo(
 ) {
     var soundOn by remember { mutableStateOf(true) }
     var brightness by remember { mutableStateOf(0.7f) }
-    val selectedTags = remember { mutableStateListOf("学习") }
+    var selectedTags by remember { mutableStateOf(setOf("学习")) }
     val allTags = listOf("学习", "运动", "音乐")
 
     DemoPageShell(
@@ -76,7 +75,7 @@ fun ControlsDemo(
                         FilterChip(
                             selected = tag in selectedTags,
                             onClick = {
-                                if (tag in selectedTags) selectedTags.remove(tag) else selectedTags.add(tag)
+                                selectedTags = if (tag in selectedTags) selectedTags - tag else selectedTags + tag
                             },
                             label = { Text(tag) },
                         )

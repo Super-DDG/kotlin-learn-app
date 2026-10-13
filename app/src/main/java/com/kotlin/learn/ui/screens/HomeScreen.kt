@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.kotlin.learn.data.content.Curriculum
 import com.kotlin.learn.data.model.CourseModule
 import com.kotlin.learn.data.progress.UserProgress
+import com.kotlin.learn.ui.demos.DemoCatalog
 import com.kotlin.learn.ui.theme.GradEnd
 import com.kotlin.learn.ui.theme.GradMid
 import com.kotlin.learn.ui.theme.GradStart
@@ -123,7 +124,7 @@ fun HomeScreen(
                 Column(Modifier.padding(16.dp)) {
                     Text("🎪 Demo 乐园", style = MaterialTheme.typography.titleLarge, color = Color.White)
                     Text(
-                        "3 个可玩的迷你示例 · 边玩边学 Compose",
+                        "${DemoCatalog.items.size} 个可玩的迷你示例 · 边玩边学 Compose",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White.copy(alpha = 0.85f),
                         modifier = Modifier.padding(top = 4.dp),
