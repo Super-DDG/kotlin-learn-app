@@ -73,6 +73,15 @@ object DemoCatalog {
             explanation = "对话框和底部弹层都是\"临时 UI\"：不在常规布局里占位，出现与否由一个布尔状态决定。" +
                 "点遮罩关闭触发 onDismissRequest，你必须在那里把状态翻回 false——和计数器是同一个状态驱动思想。",
         ),
+        DemoItem(
+            id = "scaffold",
+            title = "页面骨架",
+            emoji = "🏗",
+            description = "Scaffold + TopAppBar + TabRow + FAB + Snackbar",
+            lessonIds = listOf("compose-12"),
+            explanation = "Scaffold 把一个标准页面的\"骨架槽位\"（顶栏/悬浮按钮/提示条/内容区）分好，" +
+                "你往槽里放组件即可，不必自己算布局。FAB 点击通过 SnackbarHostState 弹出提示——提示条也是状态驱动的。",
+        ),
     )
 
     /** 按demoId 查找；无效 id 返回 null（UI 显示兜底页）。 */
