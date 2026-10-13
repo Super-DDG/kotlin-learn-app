@@ -16,6 +16,7 @@ import com.kotlin.learn.data.progress.ProgressStore
 import com.kotlin.learn.data.progress.UserProgress
 import com.kotlin.learn.ui.demos.AnimationDemo
 import com.kotlin.learn.ui.demos.CounterDemo
+import com.kotlin.learn.ui.demos.DialogDemo
 import com.kotlin.learn.ui.demos.DemoCatalog
 import com.kotlin.learn.ui.demos.DemoListScreen
 import com.kotlin.learn.ui.demos.TodoDemo
@@ -101,6 +102,7 @@ fun AppNav(progressStore: ProgressStore) {
                 "counter" -> CounterDemo(item!!, onBack, onLessonClick)
                 "todo" -> TodoDemo(item!!, onBack, onLessonClick)
                 "animation" -> AnimationDemo(item!!, onBack, onLessonClick)
+                "dialogs" -> DialogDemo(item!!, onBack, onLessonClick)
                 else -> NotFoundScreen()
             }
         }

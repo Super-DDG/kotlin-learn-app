@@ -64,6 +64,15 @@ object DemoCatalog {
             explanation = "animateFloatAsState / animateColorAsState 让你只声明\"目标值\"" +
                 "，中间的每一帧插值由库补齐。点一下盒子，目标值翻转，动画自动发生——没有手动计时器。",
         ),
+        DemoItem(
+            id = "dialogs",
+            title = "对话框与弹层",
+            emoji = "💬",
+            description = "AlertDialog 确认框与 ModalBottomSheet 底部弹层",
+            lessonIds = listOf("compose-11"),
+            explanation = "对话框和底部弹层都是\"临时 UI\"：不在常规布局里占位，出现与否由一个布尔状态决定。" +
+                "点遮罩关闭触发 onDismissRequest，你必须在那里把状态翻回 false——和计数器是同一个状态驱动思想。",
+        ),
     )
 
     /** 按demoId 查找；无效 id 返回 null（UI 显示兜底页）。 */
