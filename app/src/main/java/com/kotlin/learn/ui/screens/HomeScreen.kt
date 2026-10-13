@@ -1,5 +1,6 @@
 package com.kotlin.learn.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,25 +9,35 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.kotlin.learn.data.content.Curriculum
 import com.kotlin.learn.data.model.CourseModule
 import com.kotlin.learn.data.progress.UserProgress
+import com.kotlin.learn.ui.theme.GradEnd
+import com.kotlin.learn.ui.theme.GradMid
+import com.kotlin.learn.ui.theme.GradStart
 
 @Composable
 fun HomeScreen(
     progress: UserProgress,
     onModuleClick: (CourseModule) -> Unit,
+    onDemoLandClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(listOf(GradStart, GradMid, GradEnd))),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -54,6 +65,23 @@ fun HomeScreen(
                     Text(
                         "${done} / ${module.lessons.size} 课",
                         style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
+        }
+        item {
+            Card(
+                onClick = onDemoLandClick,
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                modifier = Modifier.fillMaxWidth().background(Brush.linearGradient(listOf(GradStart, GradMid))),
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("🎪 Demo 乐园", style = MaterialTheme.typography.titleLarge, color = Color.White)
+                    Text(
+                        "3 个可玩的迷你示例 · 边玩边学 Compose",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.85f),
                     )
                 }
             }

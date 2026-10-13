@@ -1,5 +1,6 @@
 package com.kotlin.learn.ui.navigation
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -10,6 +11,9 @@ import androidx.navigation.compose.rememberNavController
 import com.kotlin.learn.data.content.Curriculum
 import com.kotlin.learn.data.progress.ProgressStore
 import com.kotlin.learn.data.progress.UserProgress
+import com.kotlin.learn.ui.demos.DemoCatalog
+import com.kotlin.learn.ui.demos.DemoItem
+import com.kotlin.learn.ui.demos.DemoListScreen
 import com.kotlin.learn.ui.screens.HomeScreen
 import com.kotlin.learn.ui.screens.LessonListScreen
 import com.kotlin.learn.ui.screens.LessonScreen
@@ -20,8 +24,11 @@ object Routes {
     const val HOME = "home"
     const val MODULE = "module/{moduleId}"
     const val LESSON = "lesson/{lessonId}"
+    const val DEMO_LAND = "demo-land"
+    const val DEMO = "demo/{demoId}"
     fun module(moduleId: String) = "module/$moduleId"
     fun lesson(lessonId: String) = "lesson/$lessonId"
+    fun demo(demoId: String) = "demo/$demoId"
 }
 
 @Composable
@@ -34,6 +41,7 @@ fun AppNav(progressStore: ProgressStore) {
             HomeScreen(
                 progress = progress,
                 onModuleClick = { module -> navController.navigate(Routes.module(module.id)) },
+                onDemoLandClick = { navController.navigate(Routes.DEMO_LAND) },
             )
         }
         composable(Routes.MODULE) { backStackEntry ->
@@ -66,5 +74,23 @@ fun AppNav(progressStore: ProgressStore) {
                 )
             }
         }
+        composable(Routes.DEMO_LAND) {
+            DemoListScreen(
+                onDemoClick = { demo -> navController.navigate(Routes.demo(demo.id)) },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        // 临时编译桥：CounterDemo/TodoDemo/AnimationDemo 由任务 3/4/5 创建，
+        // 届时逐个替换 Placeholder 分支；任务 6 收尾时删除 Placeholder 与本说明。
+        composable(Routes.DEMO) { backStackEntry ->
+            val demoId = backStackEntry.arguments?.getString("demoId")
+            val item = DemoCatalog.find(demoId.orEmpty())
+            if (item == null) NotFoundScreen() else DemoListPlaceholder(item)
+        }
     }
+}
+
+@Composable
+private fun DemoListPlaceholder(item: DemoItem) {
+    Text("${item.emoji} ${item.title}")
 }
