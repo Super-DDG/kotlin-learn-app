@@ -8,10 +8,11 @@ data class QuizQuestion(
     val explanation: String,
 )
 
-/** 一段代码示例：说明文字 + 代码 */
+/** 一段代码示例：说明文字 + 代码 + 预期输出（无 stdout 输出的示例留空串） */
 data class CodeExample(
     val description: String,
     val code: String,
+    val expectedOutput: String = "",
 )
 
 /** 一节课 */

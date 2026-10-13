@@ -42,7 +42,10 @@ object KotlinBasics {
                         val name: String = "Kotlin"      // 类型也可以显式标注
 
                         // count = 20  // 编译错误：val 不能重新赋值
+
+                        println("total = ${'$'}total, big = ${'$'}big")   // total = 15, big = 10
                     """.trimIndent(),
+                    expectedOutput = "total = 15, big = 10",
                 ),
             ),
             cppComparison = """
@@ -107,7 +110,9 @@ object KotlinBasics {
                         println("共 ${'$'}{name.length} 个字符")        // 6
 
                         val greeting = "Hi, ${'$'}name！你今年 ${'$'}{2026 - 2011} 岁了"
+                        println(greeting)                          // Hi, Kotlin！你今年 15 岁了
                     """.trimIndent(),
+                    expectedOutput = "正在学习 Kotlin\n明年版本：3.0\n共 6 个字符\nHi, Kotlin！你今年 15 岁了",
                 ),
                 CodeExample(
                     description = "原始字符串与不可变性：",
@@ -125,7 +130,11 @@ object KotlinBasics {
                         val s = "Kotlin"
                         // s[0] = 'k'   // 编译错误：String 不可变
                         val upper = s.uppercase()               // 修改操作返回新字符串
+
+                        println(path)                           // C:\android\project
+                        println(upper)                          // KOTLIN
                     """.trimIndent(),
+                    expectedOutput = "C:\\android\\project\nKOTLIN",
                 ),
             ),
             cppComparison = """
@@ -208,21 +217,30 @@ object KotlinBasics {
                         val a = 3
                         val b = 7
                         val max = if (a > b) a else b          // if 表达式，没有三元运算符
+
+                        println(message)                       // 客户端错误：404 命中 400..499 区间
+                        println(max)                           // 7
                     """.trimIndent(),
+                    expectedOutput = "客户端错误\n7",
                 ),
                 CodeExample(
                     description = "循环与区间：",
                     code = """
                         for (i in 1..5) print(i)               // 12345：闭区间
+                        println()
                         for (i in 0 until 5) print(i)          // 01234：不含上界
+                        println()
                         for (i in 10 downTo 1 step 3) print(i) // 10741：倒序步进
+                        println()
 
                         val langs = listOf("Kotlin", "Java")
                         for (lang in langs) print(lang)        // 直接遍历元素，无需下标
+                        println()
 
                         var n = 0
                         while (n < 3) { print(n); n++ }        // while 用法与 C++ 相同
                     """.trimIndent(),
+                    expectedOutput = "12345\n01234\n10741\nKotlinJava\n012",
                 ),
             ),
             cppComparison = """
@@ -302,6 +320,7 @@ object KotlinBasics {
                         println(power(2.0, exponent = 3))         // 8.0：命名参数跳过默认值
                         println(double(21))                       // 42
                     """.trimIndent(),
+                    expectedOutput = "9.0\n8.0\n42",
                 ),
             ),
             cppComparison = """
@@ -387,7 +406,12 @@ object KotlinBasics {
 
                         // 组合：非空就取长度，空就用空串兜底
                         val size: Int = (input ?: "").length   // 0
+
+                        println(length)                        // null：?. 在 null 上短路
+                        println(display)                       // （空）：Elvis 兜底
+                        println(size)                          // 0
                     """.trimIndent(),
+                    expectedOutput = "null\n（空）\n0",
                 ),
                 CodeExample(
                     description = "智能转换、?.let 与 !! 断言：",
@@ -404,9 +428,13 @@ object KotlinBasics {
                             println("收到：${'$'}value")        // 仅非空时执行，value 是非空 String
                         }
 
+                        printLength("Kotlin")                  // 6：走非空分支
+                        printLength(null)                      // 输入为空：走 else 分支
+
                         // !! 非空断言：100% 确定非空才用，否则直接崩溃
                         // val mustExist: Int = input!!.length
                     """.trimIndent(),
+                    expectedOutput = "6\n输入为空",
                 ),
             ),
             cppComparison = """
@@ -505,6 +533,7 @@ object KotlinBasics {
                         println(a.speak())                            // 汪汪：动态绑定与虚函数一致
                         println(a.introduce())                        // 我叫旺财
                     """.trimIndent(),
+                    expectedOutput = "汪汪\n我叫旺财",
                 ),
             ),
             cppComparison = """
@@ -590,6 +619,7 @@ object KotlinBasics {
                         println(u1 === u2)              // false：=== 才比较引用
                         println(u1)                     // User(name=Ann, age=20)：toString 自动生成
                     """.trimIndent(),
+                    expectedOutput = "true\nfalse\nUser(name=Ann, age=20)",
                 ),
                 CodeExample(
                     description = "copy 与解构声明：",
@@ -601,6 +631,7 @@ object KotlinBasics {
                         val (name, age) = u1            // 解构：按主构造参数顺序取出
                         println("${'$'}name 今年 ${'$'}age 岁")   // Ann 今年 20 岁
                     """.trimIndent(),
+                    expectedOutput = "User(name=Ann, age=21)\n20\nAnn 今年 20 岁",
                 ),
             ),
             cppComparison = """
@@ -691,7 +722,12 @@ object KotlinBasics {
                             is ApiResult.Failure -> "错误码：${'$'}{result.code}"
                             ApiResult.Loading -> "加载中…"
                         }   // 穷尽了所有子类，无需 else；漏写任何一个分支都编译不过
+
+                        println(render(ApiResult.Success("Kotlin")))   // 数据：Kotlin
+                        println(render(ApiResult.Failure(404)))        // 错误码：404
+                        println(render(ApiResult.Loading))             // 加载中…
                     """.trimIndent(),
+                    expectedOutput = "数据：Kotlin\n错误码：404\n加载中…",
                 ),
             ),
             cppComparison = """
@@ -779,7 +815,11 @@ object KotlinBasics {
 
                         println(AppConfig.VERSION)             // 直接用名字访问，无需创建实例
                         AppConfig.cacheSize = 128
+
+                        println(AppConfig.describe())          // App v1.0
+                        println(AppConfig.cacheSize)           // 128
                     """.trimIndent(),
+                    expectedOutput = "1.0\nApp v1.0\n128",
                 ),
                 CodeExample(
                     description = "companion object 与私有构造工厂：",
@@ -793,7 +833,9 @@ object KotlinBasics {
 
                         val u = User.create("Ann")             // 通过伴生对象访问，如同静态成员
                         println(User.MAX_AGE)                  // 150
+                        println(u.name)                        // Ann
                     """.trimIndent(),
+                    expectedOutput = "150\nAnn",
                 ),
             ),
             cppComparison = """
@@ -872,6 +914,7 @@ object KotlinBasics {
                         println("level".isPalindrome())        // true：用起来就像 String 自带的方法
                         println(7.squared())                   // 49
                     """.trimIndent(),
+                    expectedOutput = "true\n49",
                 ),
                 CodeExample(
                     description = "扩展属性与泛型扩展：",
@@ -883,7 +926,10 @@ object KotlinBasics {
 
                         fun <T> List<T>.secondOrNull(): T? =   // 泛型扩展函数
                             if (size >= 2) this[1] else null
+
+                        println(listOf("a", "b", "c").secondOrNull())   // b
                     """.trimIndent(),
+                    expectedOutput = "3\nb",
                 ),
             ),
             cppComparison = """
@@ -973,6 +1019,7 @@ object KotlinBasics {
                         println(operate(3, 4) { a, b -> a + b })     // 7：尾随 lambda 写在括号外
                         println(operate(3, 4, ::multiply))          // 12：::multiply 函数引用也能传
                     """.trimIndent(),
+                    expectedOutput = "25\n7\n12",
                 ),
                 CodeExample(
                     description = "集合上的 lambda：隐式参数 it：",
@@ -980,8 +1027,11 @@ object KotlinBasics {
                         val names = listOf("Kotlin", "Java", "Go")
                         val lengths = names.map { it.length }        // [6, 4, 2]：it 是唯一参数的隐式名
                         val short = names.filter { it.length <= 4 }  // [Java, Go]
+                        println(lengths)                             // [6, 4, 2]
+                        println(short)                               // [Java, Go]
                         names.forEach { name -> println(name) }      // 逻辑复杂时显式命名更清晰
                     """.trimIndent(),
+                    expectedOutput = "[6, 4, 2]\n[Java, Go]\nKotlin\nJava\nGo",
                 ),
             ),
             cppComparison = """
@@ -1063,7 +1113,13 @@ object KotlinBasics {
                         val sorted = nums.sorted()                      // [1, 3, 5, 8, 9]
 
                         // nums.add(10)   // 编译错误：只读接口没有 add
+
+                        println(doubled)                                // [10, 6, 16, 2, 18]
+                        println(evens)                                  // [8]
+                        println(total)                                  // 26
+                        println(sorted)                                 // [1, 3, 5, 8, 9]
                     """.trimIndent(),
+                    expectedOutput = "[10, 6, 16, 2, 18]\n[8]\n26\n[1, 3, 5, 8, 9]",
                 ),
                 CodeExample(
                     description = "分组、查找与可变集合：",
@@ -1075,7 +1131,12 @@ object KotlinBasics {
                         val mutable = mutableListOf("a")
                         mutable.add("b")                                       // 写操作只在可变集合上
                         mutable[0] = "A"                                       // 按下标替换
+
+                        println(byLength)                                      // {6=[Kotlin], 2=[is], 3=[fun]}
+                        println(firstLong)                                     // Kotlin
+                        println(mutable)                                       // [A, b]
                     """.trimIndent(),
+                    expectedOutput = "{6=[Kotlin], 2=[is], 3=[fun]}\nKotlin\n[A, b]",
                 ),
             ),
             cppComparison = """
@@ -1152,13 +1213,17 @@ object KotlinBasics {
                     description = "区间构造与成员判断：",
                     code = """
                         for (i in 1..5) print(i)               // 12345：闭区间 [1, 5]
+                        println()
                         for (i in 1 until 5) print(i)          // 1234：不含 5
+                        println()
                         for (i in 10 downTo 1 step 3) print(i) // 10741：倒序步进
+                        println()
 
                         val score = 86
                         println(score in 60..100)              // true：in 做区间成员判断
                         println(score !in 0..59)               // true：!in 表示不在区间内
                     """.trimIndent(),
+                    expectedOutput = "12345\n1234\n10741\ntrue\ntrue",
                 ),
                 CodeExample(
                     description = "解构声明：",
@@ -1171,6 +1236,7 @@ object KotlinBasics {
                             println("${'$'}name -> ${'$'}age")
                         }
                     """.trimIndent(),
+                    expectedOutput = "ann -> 20\nbob -> 25",
                 ),
             ),
             cppComparison = """
@@ -1251,6 +1317,7 @@ object KotlinBasics {
                         println(parseAge("18"))                    // 18
                         println(parseAge("abc"))                   // 0
                     """.trimIndent(),
+                    expectedOutput = "解析完成\n18\n解析完成\n0",
                 ),
                 CodeExample(
                     description = "require 前置检查与 throw 表达式：",
@@ -1269,6 +1336,7 @@ object KotlinBasics {
                             println("捕获：${'$'}{e.message}")
                         }
                     """.trimIndent(),
+                    expectedOutput = "捕获：年龄不能为负：-1",
                 ),
             ),
             cppComparison = """

@@ -22,4 +22,16 @@ class KotlinBasicsContentTest {
         )
         assertTrue(problems.joinToString("\n"), problems.isEmpty())
     }
+
+    @Test
+    fun `模块一全部代码示例都有预期输出`() {
+        KotlinBasics.lessons.forEach { lesson ->
+            lesson.codeExamples.forEachIndexed { i, example ->
+                assertTrue(
+                    "${lesson.id} 示例 ${i + 1} 缺少预期输出",
+                    example.expectedOutput.isNotBlank(),
+                )
+            }
+        }
+    }
 }
