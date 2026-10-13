@@ -12,11 +12,22 @@ object KotlinBasics {
             id = "kotlin-01",
             title = "变量与基本类型",
             concept = """
-                Kotlin 用 `val` 声明只读变量（类似 C++ 的 `const`），用 `var` 声明可变变量。
-                类型写在变量名后面，很多情况下编译器可以自动推断，省略不写。
+                Kotlin 与 C++ 相比，变量声明**更简单也更安全**。这一课讲最常用的声明方式。
 
-                基本类型没有 C++ 那样的隐式窄化转换：`Int` 不会自动变成 `Long`，必须显式调用 `.toLong()`。
-                数字类型：`Int`（32 位）、`Long`（64 位）、`Double`、`Float`、`Boolean`、`Char`。
+                ## val 与 var
+
+                用 `val` 声明**只读变量**（类似 C++ 的 `const`），用 `var` 声明可变变量。
+                类型写在变量名后面，很多情况下编译器可以**自动推断**，省略不写。
+
+                ## 数字类型一览
+
+                - `Int`（32 位）、`Long`（64 位）
+                - `Double`、`Float`
+                - `Boolean`、`Char`
+
+                ## 与 C++ 最大的差异
+
+                基本类型**没有隐式窄化转换**：`Int` 不会自动变成 `Long`，必须显式调用 `.toLong()`。
                 有 `UInt`、`ULong`、`UShort`、`UByte` 无符号类型（Kotlin 1.9 起 Stable），但日常开发绝大多数场景仍用有符号的 `Int`/`Long`。
             """.trimIndent(),
             codeExamples = listOf(
@@ -37,8 +48,8 @@ object KotlinBasics {
             cppComparison = """
                 · `val` ≈ C++ 的 `const` 局部变量；`var` 是普通变量。
                 · Kotlin 的 `Int` 是对象（装箱发生在需要时），不像 C++ 的 `int` 是裸值；但运行时性能接近。
-                · 最大的坑：没有隐式窄化。C++ 里 `long x = intVar;` 合法，Kotlin 必须写 `intVar.toLong()`。
-                · 也没有 `auto` 关键字——不写类型时默认就是自动推断。
+                · 最大的坑：**没有隐式窄化**。C++ 里 `long x = intVar;` 合法，Kotlin 必须写 `intVar.toLong()`。
+                · 也没有 `auto` 关键字——不写类型时默认就是**自动推断**。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -70,9 +81,19 @@ object KotlinBasics {
             id = "kotlin-02",
             title = "字符串与字符串模板",
             concept = """
-                Kotlin 的 `String` 与 C++ 的 `std::string` 类似，但不可变：任何修改操作都返回新字符串，原对象不变。
-                最常用的特性是字符串模板：`${'$'}变量` 直接把值嵌进字符串，`${'$'}{表达式}` 可以嵌入任意表达式，不需要 printf 式的占位符。
+                Kotlin 的 `String` 与 C++ 的 `std::string` 类似，但**不可变**：任何修改操作都返回新字符串，原对象不变。
+
+                ## 字符串模板
+
+                - `${'$'}变量` 直接把值嵌进字符串，`${'$'}{表达式}` 可以嵌入任意表达式
+                - **不需要 printf 式的占位符**
+
+                ## 原始字符串
+
                 三引号（三个连续双引号）创建原始字符串：内容不转义、可跨行，适合写 JSON、正则、SQL 等文本。
+
+                ## 内容比较
+
                 比较字符串内容直接用 `==`，它调用的是 `equals`；要比引用（地址）才用 `===`。
             """.trimIndent(),
             codeExamples = listOf(
@@ -108,10 +129,10 @@ object KotlinBasics {
                 ),
             ),
             cppComparison = """
-                · `String` 不可变，像只能整体赋值的 `const std::string`；拼接频繁时注意产生大量中间对象（Kotlin 常直接用模板表达式解决）。
-                · 字符串模板 ≈ `std::format`/`fmt::format`，但变量直接写进字符串，不用占位符对号入座。
+                · `String` **不可变**，像只能整体赋值的 `const std::string`；拼接频繁时注意产生大量中间对象（Kotlin 常直接用模板表达式解决）。
+                · 字符串模板 ≈ `std::format`/`fmt::format`，但变量**直接写进字符串**，不用占位符对号入座。
                 · `==` 比较内容（调用 equals），`===` 才比较引用——和 C++ 的字符串指针/值语义区分方式不同。
-                · 原始字符串对应 C++ 的 `R"( ... )"` 定界符，Kotlin 的三引号里连引号都不用转义。
+                · 原始字符串对应 C++ 的 `R"( ... )"` 定界符，Kotlin 的三引号里**连引号都不用转义**。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -159,10 +180,19 @@ object KotlinBasics {
             id = "kotlin-03",
             title = "条件与循环",
             concept = """
-                `if` 和 `when` 都是表达式，可以有返回值：Kotlin 没有 `a ? b : c` 形式的三元运算符，直接写 `val max = if (a > b) a else b`。
-                `when` 替代 C++ 的 `switch`，但强大得多：可以匹配常量、区间、类型，分支之间不贯穿，不需要 `break`。
-                `for` 只有 `for (x in 序列)` 一种形式，靠 `in` 遍历区间、数组、集合；C 风格的三段式循环被区间表达式取代。
-                区间记法：`1..10` 是闭区间，`1 until 10` 是半开区间，`downTo` 倒序，`step` 设步长；需要复杂循环条件时再退回 `while`。
+                `if` 和 `when` 都是**表达式**，可以有返回值；`for` 只有 `for (x in 序列)` 一种形式，靠 `in` 遍历区间、数组、集合。
+
+                ## if 与 when
+
+                - 没有 `a ? b : c` 形式的三元运算符，直接写 `val max = if (a > b) a else b`
+                - `when` 替代 C++ 的 `switch`，但强大得多：可以匹配常量、区间、类型
+                - **分支之间不贯穿**，不需要 `break`
+
+                ## 区间与循环
+
+                - `1..10` 是闭区间，`1 until 10` 是半开区间
+                - `downTo` 倒序，`step` 设步长
+                - C 风格的三段式循环被区间表达式取代；需要复杂循环条件时再退回 `while`
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -197,8 +227,8 @@ object KotlinBasics {
             ),
             cppComparison = """
                 · `if`/`when` 都是表达式：Kotlin 刻意删掉了 `a ? b : c` 形式的三元运算符，`if` 直接兼任。
-                · `when` 分支不贯穿、不用写 `break`；C++ 里忘写 break 的经典 bug 在 Kotlin 不存在。
-                · `for (i in 0 until n)` 对应 `for (int i = 0; i < n; i++)`；`..` 是闭区间，别按数学半开区间的习惯理解。
+                · `when` 分支不贯穿、不用写 `break`；C++ 里忘写 break 的经典 bug 在 Kotlin **不存在**。
+                · `for (i in 0 until n)` 对应 `for (int i = 0; i < n; i++)`；`..` 是闭区间，**别按数学半开区间的习惯理解**。
                 · 没有 C 风格三段式 `for(;;)`；条件复杂时用 `while`，遍历一律 `for-in`。
             """.trimIndent(),
             questions = listOf(
@@ -243,9 +273,18 @@ object KotlinBasics {
             title = "函数与默认参数",
             concept = """
                 函数用 `fun` 声明，参数写 `名字: 类型`，返回类型放在参数列表之后；没有返回值时类型是 `Unit`，通常省略。
-                函数体只有一句表达式时可以省略花括号和 return，写成 `fun double(x: Int) = x * 2`，返回类型由编译器推断。
-                默认参数 + 命名参数是 Kotlin 的惯用法：调用处 `power(2.0, exponent = 3)` 自带说明，绝大多数函数重载场景都可以省掉。
-                函数可以直接写在文件顶层（顶层函数），不必挂在类上，也没有头文件/实现分离的负担。
+
+                ## 单表达式函数
+
+                函数体只有一句表达式时可以省略花括号和 return，写成 `fun double(x: Int) = x * 2`，返回类型由**编译器推断**。
+
+                ## 默认参数与命名参数
+
+                默认参数 + 命名参数是 Kotlin 的惯用法：调用处 `power(2.0, exponent = 3)` 自带说明，**绝大多数函数重载场景都可以省掉**。
+
+                ## 顶层函数
+
+                函数可以直接写在文件顶层（顶层函数），不必挂在类上，也**没有头文件/实现分离的负担**。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -267,9 +306,9 @@ object KotlinBasics {
             ),
             cppComparison = """
                 · 语法顺序与 C++ 相反：`fun f(x: Int): Int`，冒号后面是类型，返回类型在参数表之后。
-                · 默认参数 C++ 也有，但命名参数是 C++ 没有的；两者配合后基本不再需要函数重载。
-                · 单表达式函数 `fun f() = expr` 比 C++ 的「单 return 语句函数」更彻底，连花括号都省了。
-                · 顶层函数 + 无头文件：写工具函数不需要再建 class 或维护声明/实现两份。
+                · 默认参数 C++ 也有，但**命名参数是 C++ 没有的**；两者配合后基本不再需要函数重载。
+                · 单表达式函数 `fun f() = expr` 比 C++ 的「单 return 语句函数」更彻底，**连花括号都省了**。
+                · **顶层函数 + 无头文件**：写工具函数不需要再建 class 或维护声明/实现两份。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -317,11 +356,22 @@ object KotlinBasics {
             id = "kotlin-05",
             title = "空安全",
             concept = """
-                Kotlin 把「能否为 null」编码进类型系统：`String` 永远不为 null，`String?` 才可能为 null。给非空类型赋 null 直接编译错误，NPE 从运行时事故变成编译期拦截。
-                `?.` 是安全调用：`a?.length` 在 a 为 null 时整个表达式返回 null，不会崩溃。
-                `?:` 是 Elvis 运算符：`a ?: 默认值` 在左侧为 null 时取右侧，常与 `?.` 连用做兜底。
-                `!!` 是非空断言：告诉编译器「我确定它非空」，若实际为 null 会抛 NullPointerException，应尽量少用。
-                对可空值做过 null 判断（如 `if (x != null)`）后，编译器在同一作用域内自动「智能转换」为非空类型，无需手动强转。
+                Kotlin 把「能否为 null」编码进类型系统，NPE 从运行时事故变成**编译期拦截**。
+
+                ## 可空类型
+
+                - `String` 永远不为 null，`String?` 才可能为 null
+                - 给非空类型赋 null 直接**编译错误**
+
+                ## 安全调用与 Elvis
+
+                - `?.` 是安全调用：`a?.length` 在 a 为 null 时整个表达式返回 null，**不会崩溃**
+                - `?:` 是 Elvis 运算符：`a ?: 默认值` 在左侧为 null 时取右侧，常与 `?.` 连用做兜底
+
+                ## !! 与智能转换
+
+                - `!!` 是非空断言：告诉编译器「我确定它非空」，若实际为 null 会抛 NullPointerException，**应尽量少用**
+                - 对可空值做过 null 判断（如 `if (x != null)`）后，编译器在同一作用域内自动「**智能转换**」为非空类型，无需手动强转
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -360,10 +410,10 @@ object KotlinBasics {
                 ),
             ),
             cppComparison = """
-                · C++ 里任何指针/引用都可能为空且编译器不检查；Kotlin 把可空性写进类型，`String s = null` 直接编译不过。
+                · C++ 里任何指针/引用都可能为空且编译器不检查；Kotlin 把可空性写进类型，`String s = null` **直接编译不过**。
                 · `String?` 的使用体验接近 C++ 的 `std::optional<std::string>`，但 `?.`、`?:` 让读写语法自然得多。
-                · `!!` 相当于 C++ 不加检查直接解引用——代码评审中通常被视为坏味道，能用 `?.`/`?:` 就别用 `!!`。
-                · 智能转换类似「判空后自动收窄类型」，比 C++ 的 `if (p)` 手动守卫更进一步；注意可变属性可能被别的线程改掉时编译器会拒绝智能转换。
+                · `!!` 相当于 C++ 不加检查直接解引用——代码评审中通常被视为坏味道，**能用 `?.`/`?:` 就别用 `!!`**。
+                · 智能转换类似「判空后自动收窄类型」，比 C++ 的 `if (p)` 手动守卫更进一步；注意可变属性可能被别的线程改掉时编译器会**拒绝智能转换**。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -422,10 +472,21 @@ object KotlinBasics {
             id = "kotlin-06",
             title = "类与继承",
             concept = """
+                Kotlin 的类与 C++ 最大的观念差异：**默认不可扩展，开放才需声明**。
+
+                ## 主构造函数
+
                 类用 `class` 声明，主构造函数直接写在类名后：`class Person(val name: String)`，构造参数可同时声明为属性，省去 C++ 里「成员声明 + 初始化列表」的重复。
-                Kotlin 的类默认是 `final` 的，不能被继承；想被继承必须标 `open`，方法要被覆写同样要标 `open`——与 C++ 正好相反（C++ 默认可继承，final 才禁止）。
-                子类覆写必须写 `override`，漏写直接编译错误；动态绑定行为与 C++ 虚函数一致。
-                不支持类的多继承，但可以实现多个 `interface`；抽象类用 `abstract` 标记，其抽象成员不需要再写 open。
+
+                ## 默认 final 与 override
+
+                - 类默认是 `final` 的，不能被继承；想被继承必须标 `open`，方法要被覆写同样要标 `open`——**与 C++ 正好相反**（C++ 默认可继承，final 才禁止）
+                - 子类覆写必须写 `override`，漏写直接编译错误；动态绑定行为与 C++ 虚函数一致
+
+                ## 继承与接口
+
+                - 不支持类的多继承，但可以实现多个 `interface`
+                - 抽象类用 `abstract` 标记，其抽象成员**不需要再写 open**
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -447,9 +508,9 @@ object KotlinBasics {
                 ),
             ),
             cppComparison = """
-                · 默认 final、显式 open：与 C++ 相反，Kotlin 的哲学是「默认不可扩展，开放才需声明」。
+                · **默认 final、显式 open**：与 C++ 相反，Kotlin 的哲学是「默认不可扩展，开放才需声明」。
                 · `class Dog(name: String) : Animal(name)` 中括号里是在调用父类构造函数，对应 C++ 的初始化列表。
-                · override 是强制的：C++ 里 override 可写可不写，Kotlin 漏写直接编译错误。
+                · override 是强制的：C++ 里 override 可写可不写，Kotlin **漏写直接编译错误**。
                 · `val name` 一个主构造参数同时完成「成员声明 + 构造赋值 + getter」，没有 C++ 字段/getter 风格之争。
             """.trimIndent(),
             questions = listOf(
@@ -504,9 +565,18 @@ object KotlinBasics {
             title = "data class",
             concept = """
                 `data class` 专为承载数据而生：编译器自动生成 `equals`、`hashCode`、`toString`、`copy` 以及解构用的 `componentN` 函数。
+
+                ## 属性写在主构造函数里
+
                 数据属性直接写在主构造函数里（`val`/`var`），类体经常是空的。
-                `==` 比较的是内容（调用自动生成的 equals）：两个属性完全相同的对象相等，这正是 C++ 需要手写 `operator==` 才能得到的行为。
-                `copy` 在不动原对象的前提下「改几个字段」生成新实例，配合 `val` 实现不可变数据模型，是 Kotlin 推荐的状态承载方式。
+
+                ## 内容相等
+
+                `==` 比较的是**内容**（调用自动生成的 equals）：两个属性完全相同的对象相等，这正是 C++ 需要手写 `operator==` 才能得到的行为。
+
+                ## copy 与不可变模型
+
+                `copy` 在不动原对象的前提下「改几个字段」生成新实例，配合 `val` 实现不可变数据模型，**是 Kotlin 推荐的状态承载方式**。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -534,9 +604,9 @@ object KotlinBasics {
                 ),
             ),
             cppComparison = """
-                · data class ≈ 一个 struct 加上免费的手写 `operator==`、`operator<<` 和 tuple 式解构接口，样板代码全免。
-                · copy ≈ 拷贝构造 + 指定成员覆盖，但以「生成新对象」的不可变风格表达，原对象永远不动。
-                · `==` 是内容比较、`===` 才是地址比较——与 C++ 对类类型默认比较地址的语义不同，习惯要先扭转过来。
+                · data class ≈ 一个 struct 加上免费的手写 `operator==`、`operator<<` 和 tuple 式解构接口，**样板代码全免**。
+                · copy ≈ 拷贝构造 + 指定成员覆盖，但以「生成新对象」的不可变风格表达，**原对象永远不动**。
+                · `==` 是内容比较、`===` 才是地址比较——与 C++ 对类类型默认比较地址的语义不同，**习惯要先扭转过来**。
                 · 解构声明对应 C++17 结构化绑定，但顺序由 componentN 决定，data class 自动按主构造参数生成。
             """.trimIndent(),
             questions = listOf(
@@ -590,10 +660,21 @@ object KotlinBasics {
             id = "kotlin-08",
             title = "密封类",
             concept = """
-                密封类（`sealed class` / `sealed interface`）把子类集合封闭起来：所有子类必须定义在与它相同的模块且同包内，外部无法派生新子类型。
-                编译器因此「认识」全部可能的子类型：用 `when` 逐一处理每个子类，穷尽后可以不写 `else`，漏掉任何一个分支都编译不过。
-                好处是修改可传播：将来新增一个子类，所有处理它的 `when` 都会立刻编译报错，编译器替你找全每一处。
-                它是表达「有限状态」的标准工具：请求的成功/失败/加载、UI 事件等，比 enum + if 链、比 C++ 的 union + switch 安全得多。
+                密封类（`sealed class` / `sealed interface`）把子类集合封闭起来，是表达「有限状态」的**标准工具**。
+
+                ## 封闭的子类集合
+
+                所有子类必须定义在与它相同的**模块且同包**内，外部无法派生新子类型。
+
+                ## when 穷尽性检查
+
+                - 编译器因此「认识」全部可能的子类型：用 `when` 逐一处理每个子类，穷尽后可以不写 `else`
+                - **漏掉任何一个分支都编译不过**
+                - 修改可传播：将来新增一个子类，所有处理它的 `when` 都会立刻编译报错，**编译器替你找全每一处**
+
+                ## 典型用途
+
+                请求的成功/失败/加载、UI 事件等，比 enum + if 链、比 C++ 的 union + switch **安全得多**。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -614,9 +695,9 @@ object KotlinBasics {
                 ),
             ),
             cppComparison = """
-                · 思路上接近 `std::variant<Success, Failure, Loading>` + `std::visit`，但 Kotlin 是语言级支持：每个子类自带字段与行为，不用 std::get_if 拼凑。
-                · when 的穷尽性由编译器检查；C++ 的 switch-enum 没有「每个 variant 备选项必须处理」的保障，靠警告或运行时。
-                · 新增子类时所有相关 when 立刻编译报错——相当于免费的「修改影响面检查」。
+                · 思路上接近 `std::variant<Success, Failure, Loading>` + `std::visit`，但 Kotlin 是**语言级支持**：每个子类自带字段与行为，不用 std::get_if 拼凑。
+                · when 的穷尽性由**编译器检查**；C++ 的 switch-enum 没有「每个 variant 备选项必须处理」的保障，靠警告或运行时。
+                · 新增子类时所有相关 when 立刻编译报错——相当于**免费的「修改影响面检查」**。
                 · 子类可以是 data class 或 object，状态 + 数据一起建模，比「enum 值 + 平行变量记录结果」干净得多。
             """.trimIndent(),
             questions = listOf(
@@ -670,10 +751,21 @@ object KotlinBasics {
             id = "kotlin-09",
             title = "object 与伴生对象",
             concept = """
-                Kotlin 没有 `static` 关键字。`object` 声明的是单例对象：全局只有一份、首次访问时线程安全地初始化，成员直接用 `ObjectName.member` 访问。
-                类内部可以声明 `companion object`（伴生对象），其成员通过类名访问，等价于 Java/C++ 的静态成员；一个类最多一个伴生对象。
-                编译期常量用 `const val` 声明，且只能放在顶层或 object/companion 里，相当于 C++ 的 `constexpr` 常量。
-                与 C++ 相比还有个习惯差异：Kotlin 的工具函数更常写成顶层函数，而不是统统塞进某个类的静态区。
+                Kotlin 没有 `static` 关键字，静态成员与单例分别由 `companion object` 和 `object` 承担。
+
+                ## object 单例
+
+                `object` 声明的是单例对象：全局只有一份、首次访问时**线程安全地初始化**，成员直接用 `ObjectName.member` 访问。
+
+                ## companion object
+
+                - 类内部可以声明 `companion object`（伴生对象），其成员通过类名访问，等价于 Java/C++ 的静态成员
+                - 一个类**最多一个**伴生对象
+
+                ## const val 与惯用法
+
+                - 编译期常量用 `const val` 声明，且只能放在顶层或 object/companion 里，相当于 C++ 的 `constexpr` 常量
+                - 习惯差异：Kotlin 的工具函数更常写成**顶层函数**，而不是统统塞进某个类的静态区
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -705,9 +797,9 @@ object KotlinBasics {
                 ),
             ),
             cppComparison = """
-                · `object` ≈ Meyers 单例，但由语言保证线程安全与全局唯一，不用自己写双检锁。
+                · `object` ≈ Meyers 单例，但**由语言保证线程安全与全局唯一**，不用自己写双检锁。
                 · `companion object` 的成员对应 C++ 的 static 成员；`const val` 对应 constexpr static 常量。
-                · 没有 static 关键字——很多「静态工具」在 Kotlin 里写成顶层函数反而更符合惯例。
+                · 没有 static 关键字——很多「静态工具」在 Kotlin 里写成**顶层函数**反而更符合惯例。
                 · 私有构造 + companion 工厂方法是控制实例化的常见组合，等价于 C++ 私有构造函数 + 静态 create。
             """.trimIndent(),
             questions = listOf(
@@ -751,10 +843,22 @@ object KotlinBasics {
             id = "kotlin-10",
             title = "扩展函数",
             concept = """
-                扩展函数让你给任何已有类（包括标准库和第三方库的类）追加新函数，而不修改其源码、也不写继承：定义 `fun String.shout()` 后，任何 String 都能 `s.shout()` 直接调用。
-                函数体内用 `this` 指代接收者对象；本质仍是普通函数，编译成「接收者作为第一个参数」的静态调用，没有虚函数开销。
-                关键细节：扩展函数按变量的「声明类型」静态解析，不是运行时类型——这点与成员函数的动态绑定不同。
-                还有扩展属性（只有 getter、没有背后字段）和泛型扩展；Kotlin 标准库的 let、map、filter 等流畅 API 全靠扩展函数实现。
+                扩展函数让你给任何已有类（包括标准库和第三方库的类）追加新函数，而**不修改其源码、也不写继承**。
+
+                ## 定义与 this
+
+                - 定义 `fun String.shout()` 后，任何 String 都能 `s.shout()` 直接调用
+                - 函数体内用 `this` 指代接收者对象
+
+                ## 静态解析（关键细节）
+
+                - 本质仍是普通函数，编译成「接收者作为第一个参数」的静态调用，**没有虚函数开销**
+                - 扩展函数按变量的「**声明类型**」静态解析，不是运行时类型——这点与成员函数的动态绑定不同
+
+                ## 扩展属性与生态
+
+                - 还有扩展属性（只有 getter、没有背后字段）和泛型扩展
+                - Kotlin 标准库的 `let`、`map`、`filter` 等流畅 API 全靠扩展函数实现
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -784,9 +888,9 @@ object KotlinBasics {
             ),
             cppComparison = """
                 · C++ 没有这个语法：等价写法是自由函数 `bool isPalindrome(const std::string&)`，但调用形式只能是 `isPalindrome(s)` 而非 `s.isPalindrome()`（统一调用语法 UFCS 至今未进标准）。
-                · 扩展函数不会真正修改类：不能访问 private 成员，也没有虚函数派发，一切在编译期静态决定。
-                · 按声明类型解析：`val a: Animal = Dog()` 上调用 Animal 的扩展时，即使 a 实际是 Dog 也不会匹配 Dog 的同名扩展——与成员函数行为不同，务必区分。
-                · 标准库大量 API（let、map、filter、use）都是扩展函数，读懂扩展函数是读懂 Kotlin 代码的前提。
+                · 扩展函数**不会真正修改类**：不能访问 private 成员，也没有虚函数派发，一切在编译期静态决定。
+                · **按声明类型解析**：`val a: Animal = Dog()` 上调用 Animal 的扩展时，即使 a 实际是 Dog 也不会匹配 Dog 的同名扩展——与成员函数行为不同，务必区分。
+                · 标准库大量 API（`let`、`map`、`filter`、`use`）都是扩展函数，**读懂扩展函数是读懂 Kotlin 代码的前提**。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -839,10 +943,21 @@ object KotlinBasics {
             id = "kotlin-11",
             title = "Lambda 与高阶函数",
             concept = """
-                Kotlin 中函数是一等公民：可以存进变量、当参数传、当返回值。函数类型写作 `(Int, Int) -> Int`，lambda 用花括号表达：`{ a, b -> a + b }`。
-                高阶函数指「参数或返回值包含函数」的函数，它是集合操作、回调、DSL 的基石。
-                lambda 是函数的最后一个参数时可写在括号外（尾随 lambda），这是 Kotlin 代码读起来像自然语言的关键；lambda 只有一个参数时可用隐式名 `it`。
-                与 C++ 的 `std::function` 不同，Kotlin 标准库的高阶函数普遍标记 `inline`，lambda 会被内联，通常没有额外的堆分配开销。
+                Kotlin 中**函数是一等公民**：可以存进变量、当参数传、当返回值。
+
+                ## 函数类型与 lambda
+
+                - 函数类型写作 `(Int, Int) -> Int`，lambda 用花括号表达：`{ a, b -> a + b }`
+                - 高阶函数指「参数或返回值包含函数」的函数，它是集合操作、回调、DSL 的**基石**
+
+                ## 尾随 lambda 与 it
+
+                - lambda 是函数的最后一个参数时可写在括号外（尾随 lambda），这是 Kotlin 代码读起来像自然语言的关键
+                - lambda 只有一个参数时可用隐式名 `it`
+
+                ## inline 开销
+
+                与 C++ 的 `std::function` 不同，Kotlin 标准库的高阶函数普遍标记 `inline`，lambda 会被内联，**通常没有额外的堆分配开销**。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -870,9 +985,9 @@ object KotlinBasics {
                 ),
             ),
             cppComparison = """
-                · 对应 C++ 的 lambda 表达式 + `std::function`，但函数类型是 Kotlin 语言内置概念，不需要 std:: 包装。
+                · 对应 C++ 的 lambda 表达式 + `std::function`，但函数类型是 **Kotlin 语言内置概念**，不需要 std:: 包装。
                 · 尾随 lambda 让回调写法接近 DSL：`operate(3, 4) { a, b -> a + b }` 比 `[](int a, int b){...}` 的仪式感少得多。
-                · 标准库高阶函数普遍 inline，lambda 直接内联进调用点——没有 std::function 的间接调用与可能的堆分配。
+                · 标准库高阶函数普遍 inline，lambda 直接内联进调用点——**没有 std::function 的间接调用与可能的堆分配**。
                 · 单参数隐式名 `it` 类似 boost 的 `_1` 占位符，但无需 bind，拿来即用。
             """.trimIndent(),
             questions = listOf(
@@ -921,10 +1036,20 @@ object KotlinBasics {
             id = "kotlin-12",
             title = "集合操作",
             concept = """
-                Kotlin 把集合分成两套接口：只读的 `List`/`Set`/`Map` 与可变的 `MutableList`/`MutableSet`/`MutableMap`；`listOf` 创建只读列表，`mutableListOf` 创建可变列表，默认用只读是推荐风格。
-                注意只读不是深度不可变：`List` 接口上没有 add/remove，但如果它只是可变集合的只读视图，原集合改了它也会跟着变。
-                标准库用扩展函数提供 `map`、`filter`、`fold`、`groupBy`、`sorted` 等操作，链式组合、返回新集合，替代手写循环。
-                这些操作对应 C++20 ranges 的 transform/filter，但直接返回具体集合，不需要 ranges::to 那样的收尾。
+                Kotlin 把集合分成两套接口：只读的 `List`/`Set`/`Map` 与可变的 `MutableList`/`MutableSet`/`MutableMap`。
+
+                ## 只读与可变
+
+                - `listOf` 创建只读列表，`mutableListOf` 创建可变列表，**默认用只读是推荐风格**
+                - 只读**不是深度不可变**：`List` 接口上没有 add/remove，但如果它只是可变集合的只读视图，原集合改了它也会跟着变
+
+                ## 常用操作
+
+                标准库用扩展函数提供 `map`、`filter`、`fold`、`groupBy`、`sorted` 等操作，链式组合、返回新集合，**替代手写循环**。
+
+                ## 与 C++20 ranges
+
+                这些操作对应 C++20 ranges 的 transform/filter，但**直接返回具体集合**，不需要 `ranges::to` 那样的收尾。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -954,10 +1079,10 @@ object KotlinBasics {
                 ),
             ),
             cppComparison = """
-                · `listOf` ≈ `const std::vector`，`mutableListOf` 才是可修改的 vector；写操作只存在于 Mutable 接口。
+                · `listOf` ≈ `const std::vector`，`mutableListOf` 才是可修改的 vector；**写操作只存在于 Mutable 接口**。
                 · `map`/`filter` ≈ ranges 的 transform/filter + 收集到新容器，一步到位直接返回集合。
                 · `fold(0) { acc, n -> acc + n }` ≈ `std::accumulate(v.begin(), v.end(), 0)`。
-                · 只读引用可能只是可变集合的视图：和 C++ 的 const 引用别名问题一样，把 MutableList 当 List 传出去后，原引用的修改会「穿透」。
+                · 只读引用可能只是可变集合的视图：和 C++ 的 const 引用别名问题一样，把 MutableList 当 List 传出去后，原引用的修改会「**穿透**」。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -1005,10 +1130,22 @@ object KotlinBasics {
             id = "kotlin-13",
             title = "区间与解构",
             concept = """
-                区间用 `..`（闭区间）、`until`（半开）、`downTo`（倒序）、`step`（步长）构造，类型如 `IntRange`，本质是可迭代的序列。
-                `in` 不只用于 for 循环，还能做成员判断：`x in 1..100` 直接返回 Boolean，比 C++ 的两段比较更接近数学写法。
-                解构声明把一个对象一次拆成多个变量：`val (a, b) = pair`，编译器按约定调用 `component1()`、`component2()`。
-                data class 自动生成 componentN，Pair/Triple 内置支持；for 循环里也能解构，比如遍历 Map：`for ((k, v) in map)`。
+                区间与解构让循环和取值更接近数学写法：区间负责「范围」，解构负责「拆包」。
+
+                ## 区间构造
+
+                - `..`（闭区间）、`until`（半开）、`downTo`（倒序）、`step`（步长）
+                - 类型如 `IntRange`，本质是**可迭代的序列**
+
+                ## in 做成员判断
+
+                `in` 不只用于 for 循环：`x in 1..100` 直接返回 Boolean，**比 C++ 的两段比较更接近数学写法**。
+
+                ## 解构声明
+
+                - 把一个对象一次拆成多个变量：`val (a, b) = pair`，编译器按约定调用 `component1()`、`component2()`
+                - data class 自动生成 componentN，Pair/Triple 内置支持
+                - for 循环里也能解构，比如遍历 Map：`for ((k, v) in map)`
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -1037,10 +1174,10 @@ object KotlinBasics {
                 ),
             ),
             cppComparison = """
-                · `for (i in 1..n)` ≈ `for (int i = 1; i <= n; ++i)`；`until` 对应 `i < n`。闭开区间选错是 off-by-one 的高发区。
+                · `for (i in 1..n)` ≈ `for (int i = 1; i <= n; ++i)`；`until` 对应 `i < n`。**闭开区间选错是 off-by-one 的高发区**。
                 · 解构声明对应 C++17 结构化绑定 `auto [a, b] = p;`，但 Kotlin 靠 componentN 约定，data class 自动支持且可自定义。
                 · `x in 1..100` 比 `x >= 1 && x <= 100` 可读性高，还能用于 when 分支与 while 条件。
-                · Pair ≈ std::pair，但正式代码里更推荐用带字段名的 data class，Pair 留给临时场合。
+                · Pair ≈ std::pair，但正式代码里更推荐用**带字段名的 data class**，Pair 留给临时场合。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -1084,9 +1221,19 @@ object KotlinBasics {
             title = "异常处理",
             concept = """
                 异常处理的结构与 C++ 一致：`try { } catch (e: XxxException) { } finally { }`，catch 按异常类型匹配，finally 无论成败都执行。
-                关键差异：`try` 是表达式，可以有值——`val n = try { text.toInt() } catch (e: NumberFormatException) { 0 }` 把「尝试 + 兜底」写成一行。
-                `throw` 也是表达式（类型为 Nothing），因此能出现在 Elvis 右侧：`name ?: throw IllegalArgumentException(...)`。
-                Kotlin 没有受检异常：函数签名不声明会抛什么，是否捕获由调用者决定；资源释放不要依赖手写 finally，标准库的 `use` 扩展承担 RAII 的角色。
+
+                ## try 与 throw 都是表达式
+
+                - `try` 是表达式，可以有值：`val n = try { text.toInt() } catch (e: NumberFormatException) { 0 }` 把「尝试 + 兜底」写成一行
+                - `throw` 也是表达式（类型为 Nothing），因此能出现在 Elvis 右侧：`name ?: throw IllegalArgumentException(...)`
+
+                ## 没有受检异常
+
+                函数签名**不声明会抛什么**，是否捕获由调用者决定。
+
+                ## 资源释放：use
+
+                资源释放不要依赖手写 finally，标准库的 `use` 扩展承担 **RAII** 的角色。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -1126,9 +1273,9 @@ object KotlinBasics {
             ),
             cppComparison = """
                 · try/catch/finally 的结构与 C++ 相同：按类型匹配、栈展开、finally 必执行（C++ 用 RAII 表达的部分，这里靠 finally）。
-                · 没有受检异常：不像 Java 要写 throws，也没有 C++ noexcept 那样的规范声明——异常是「未检查」的，文档里说明。
-                · Kotlin 的 throw 类型是 Nothing（一切类型的子类型），可出现在任何需要值的位置（如 Elvis 右侧）；C++ 的 throw 虽也是表达式但类型为 void，只能在极有限的位置（如条件运算符操作数）使用。类比结论不变：Kotlin 的写法更灵活。
-                · 关闭资源别手写 finally：`file.use { }` 等价 RAII，Closeable 资源一律用它，异常安全且代码更短。
+                · **没有受检异常**：不像 Java 要写 throws，也没有 C++ noexcept 那样的规范声明——异常是「未检查」的，文档里说明。
+                · Kotlin 的 throw 类型是 Nothing（一切类型的子类型），可出现在任何需要值的位置（如 Elvis 右侧）；C++ 的 throw 虽也是表达式但类型为 void，只能在极有限的位置（如条件运算符操作数）使用。**类比结论不变：Kotlin 的写法更灵活**。
+                · 关闭资源别手写 finally：`file.use { }` 等价 RAII，**Closeable 资源一律用它**，异常安全且代码更短。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
