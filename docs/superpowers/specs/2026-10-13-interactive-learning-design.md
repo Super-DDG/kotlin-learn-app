@@ -18,12 +18,14 @@
 - `recordQuizResult` 交卷写进度逻辑从 LessonScreen 移入 QuizScreen；进度语义不变（交卷即记完成、保留最好成绩、首页/列表自动刷新）
 - LessonScreen 移除 QuizSection，底部改为测验入口卡："✅ 开始随堂测验（N 题）→" 导航到测验页；LessonListScreen 完成标记数据不变
 
-## 二、Kotlin Playground 在线运行（模块一限定）
+## 二、模块一示例"运行结果"（v2 修订：废弃在线 Playground）
 
-- 新路由 `playground/{lessonId}/{exampleIndex}` → `PlaygroundScreen`
-- 实现：`assets/playground.html` 加载 JetBrains 官方 `kotlin-playground` JS 组件（unpkg CDN）；示例代码经 `loadDataWithBaseURL` 注入；WebView 开启 JavaScript
-- 入口：模块一（kotlin-* 课）每个代码卡右上角"▶ 在线试一试"按钮
-- 边界与降级：AndroidManifest 加 `INTERNET` 权限；无网络时显示静态代码 + 离线提示；模块二/三的 Android/Compose 代码不接 Playground（Playground 仅支持纯 Kotlin），改走 Demo 反向入口
+> v1 曾实现 WebView + JetBrains Playground 在线运行；实机验证在中国大陆网络下组件加载不完整（编辑器不出现、运行无响应），且服务端在境外不可控。经用户裁定改为全离线的静态方案。
+
+- `CodeExample` 模型新增 `expectedOutput: String` 字段（默认空串，模块二/三的 Compose/Android 示例无 stdout 输出，留空即不显示运行按钮）
+- 模块一 14 课全部代码示例人工核对并填入**预期输出**（源自代码推导，多数示例的注释中已有输出线索）
+- 代码卡交互：示例有输出时显示"▶ 运行示例"按钮，点击展开"运行结果"区（等宽字体，模拟终端）
+- 完全离线：移除 PlaygroundScreen、playground 路由与 `INTERNET`/`ACCESS_NETWORK_STATE` 权限
 
 ## 三、Demo 反向入口
 
