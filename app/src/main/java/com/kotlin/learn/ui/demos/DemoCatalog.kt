@@ -82,6 +82,15 @@ object DemoCatalog {
             explanation = "Scaffold 把一个标准页面的\"骨架槽位\"（顶栏/悬浮按钮/提示条/内容区）分好，" +
                 "你往槽里放组件即可，不必自己算布局。FAB 点击通过 SnackbarHostState 弹出提示——提示条也是状态驱动的。",
         ),
+        DemoItem(
+            id = "login-form",
+            title = "登录表单",
+            emoji = "📝",
+            description = "TextField/Checkbox/Button/Snackbar 表单全家桶",
+            lessonIds = listOf("compose-13"),
+            explanation = "输入框没有\"自己记住内容\"：text 状态是唯一事实源，onValueChange 把新值写回状态，" +
+                "输入框只是状态的投影。校验在点击登录时集中做，错误也是一条状态——整个表单没有一处\"直接改 UI\"。",
+        ),
     )
 
     /** 按demoId 查找；无效 id 返回 null（UI 显示兜底页）。 */
