@@ -27,7 +27,6 @@ import com.kotlin.learn.ui.screens.HomeScreen
 import com.kotlin.learn.ui.screens.LessonListScreen
 import com.kotlin.learn.ui.screens.LessonScreen
 import com.kotlin.learn.ui.screens.NotFoundScreen
-import com.kotlin.learn.ui.screens.PlaygroundScreen
 import com.kotlin.learn.ui.screens.QuizScreen
 import kotlinx.coroutines.launch
 
@@ -36,13 +35,11 @@ object Routes {
     const val MODULE = "module/{moduleId}"
     const val LESSON = "lesson/{lessonId}"
     const val QUIZ = "quiz/{lessonId}"
-    const val PLAYGROUND = "playground/{lessonId}/{exampleIndex}"
     const val DEMO_LAND = "demo-land"
     const val DEMO = "demo/{demoId}"
     fun module(moduleId: String) = "module/$moduleId"
     fun lesson(lessonId: String) = "lesson/$lessonId"
     fun quiz(lessonId: String) = "quiz/$lessonId"
-    fun playground(lessonId: String, exampleIndex: Int) = "playground/$lessonId/$exampleIndex"
     fun demo(demoId: String) = "demo/$demoId"
 }
 
@@ -90,7 +87,6 @@ fun AppNav(progressStore: ProgressStore) {
                 LessonScreen(
                     lesson = lesson,
                     onQuizClick = { navController.navigate(Routes.quiz(lesson.id)) },
-                    onPlaygroundClick = { index -> navController.navigate(Routes.playground(lesson.id, index)) },
                     onDemoClick = { demoId -> navController.navigate(Routes.demo(demoId)) },
                 )
             }
@@ -107,19 +103,6 @@ fun AppNav(progressStore: ProgressStore) {
                     onSubmitQuiz = { correct, total ->
                         scope.launch { progressStore.recordQuizResult(lesson.id, correct, total) }
                     },
-                )
-            }
-        }
-        composable(Routes.PLAYGROUND) { backStackEntry ->
-            val lessonId = backStackEntry.arguments?.getString("lessonId")
-            val index = backStackEntry.arguments?.getString("exampleIndex")?.toIntOrNull()
-            val example = Curriculum.findLesson(lessonId.orEmpty())?.codeExamples?.getOrNull(index ?: -1)
-            if (example == null) {
-                NotFoundScreen()
-            } else {
-                PlaygroundScreen(
-                    code = example.code,
-                    onBack = { navController.popBackStack() },
                 )
             }
         }

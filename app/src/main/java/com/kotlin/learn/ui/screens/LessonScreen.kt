@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,12 +23,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.kotlin.learn.data.markdown.MarkdownParser
 import com.kotlin.learn.data.model.Lesson
@@ -46,7 +49,6 @@ import com.kotlin.learn.ui.theme.WarmOn
 fun LessonScreen(
     lesson: Lesson,
     onQuizClick: () -> Unit,
-    onPlaygroundClick: (exampleIndex: Int) -> Unit,
     onDemoClick: (demoId: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -88,18 +90,6 @@ fun LessonScreen(
                                     ),
                             )
                         }
-                        if (lesson.id.startsWith("kotlin-")) {
-                            Spacer(Modifier.weight(1f))
-                            Text(
-                                "▶ 在线试一试",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = CodeFg,
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { onPlaygroundClick(exampleIndex) }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                            )
-                        }
                     }
                     Text(
                         example.description,
@@ -111,6 +101,35 @@ fun LessonScreen(
                         code = example.code,
                         modifier = Modifier.padding(top = 4.dp),
                     )
+                    if (example.expectedOutput.isNotBlank()) {
+                        var showOutput by remember(example.expectedOutput) { mutableStateOf(false) }
+                        Text(
+                            if (showOutput) "▾ 运行结果" else "▶ 运行示例",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = CodeFg,
+                            modifier = Modifier
+                                .padding(top = 8.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { showOutput = !showOutput }
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                        )
+                        if (showOutput) {
+                            Text(
+                                "运行结果",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = CodeFg.copy(alpha = 0.6f),
+                                modifier = Modifier.padding(top = 8.dp),
+                            )
+                            Text(
+                                example.expectedOutput,
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontFamily = FontFamily.Monospace,
+                                ),
+                                color = CodeFg,
+                                modifier = Modifier.padding(top = 2.dp),
+                            )
+                        }
+                    }
                 }
             }
         }
