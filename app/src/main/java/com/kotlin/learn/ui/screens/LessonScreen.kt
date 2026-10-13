@@ -3,11 +3,13 @@ package com.kotlin.learn.ui.screens
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -23,7 +25,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -41,6 +45,7 @@ import com.kotlin.learn.ui.theme.WarmOn
 fun LessonScreen(
     lesson: Lesson,
     onQuizClick: () -> Unit,
+    onPlaygroundClick: (exampleIndex: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val appear = remember { Animatable(0f) }
@@ -60,14 +65,17 @@ fun LessonScreen(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = IndigoOn,
         ) { MarkdownText(MarkdownParser.parse(lesson.concept)) }
-        lesson.codeExamples.forEach { example ->
+        lesson.codeExamples.forEachIndexed { exampleIndex, example ->
             Card(
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = CodeBg),
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(Modifier.padding(12.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         repeat(3) { i ->
                             Box(
                                 Modifier
@@ -76,6 +84,18 @@ fun LessonScreen(
                                         listOf(Color(0xFFFF5F56), Color(0xFFFFBD2E), Color(0xFF27C93F))[i],
                                         CircleShape,
                                     ),
+                            )
+                        }
+                        if (lesson.id.startsWith("kotlin-")) {
+                            Spacer(Modifier.weight(1f))
+                            Text(
+                                "▶ 在线试一试",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = CodeFg,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { onPlaygroundClick(exampleIndex) }
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
                             )
                         }
                     }
