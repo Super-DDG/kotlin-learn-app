@@ -536,7 +536,7 @@ object AndroidCore {
             concept = """
                 Android 权限分几类：普通权限（如 INTERNET）在 Manifest 声明后自动授予；危险权限（定位、相机、麦克风、通讯录等敏感数据）从 Android 6.0 起必须在运行时向用户弹窗请求，用户可以拒绝。
                 标准流程三步：Manifest 里 <uses-permission> 声明 → 用 ContextCompat.checkSelfPermission 检查 → 未授权则用 Activity Result API 发起请求。
-                Android 10+ 进一步收紧：位置支持"仅本次使用"选项，后台定位要单独申请，权限模型逐年趋严，设计功能时要按"随时会被拒"来做降级方案。
+                Android 10 起进一步收紧：位置只支持"仅在使用该应用时允许"，后台定位要单独申请；Android 11 起位置对话框多了"仅这一次"的一次性授权选项。权限模型逐年趋严，设计功能时要按"随时会被拒"来做降级方案。
                 Compose 中用 rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) 发起请求，根据授权结果切换 UI。
             """.trimIndent(),
             codeExamples = listOf(
@@ -1013,7 +1013,7 @@ object AndroidCore {
                     question = "ART 的前身是？",
                     options = listOf("JVM", "Dalvik", "Hotspot", "V8"),
                     correctIndex = 1,
-                    explanation = "Dalvik 是 Android 早期的运行时，4.4 引入、5.0 起被 ART 全面取代。",
+                    explanation = "Dalvik 是 Android 早期的运行时（1.0 起就存在）；ART 在 4.4 引入（实验性），5.0 起全面取代 Dalvik。",
                 ),
                 QuizQuestion(
                     question = "上架 Google Play 时应提交的格式是？",
