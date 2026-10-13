@@ -5,7 +5,7 @@ import com.kotlin.learn.data.model.CourseModule
 import com.kotlin.learn.data.model.Lesson
 import com.kotlin.learn.data.model.QuizQuestion
 
-/** 模块三：Compose UI 入门（10 课）。面向会 C++ 的初学者，讲解 Jetpack Compose 声明式 UI。 */
+/** 模块三：Compose UI 入门（14 课）。面向会 C++ 的初学者，讲解 Jetpack Compose 声明式 UI。 */
 object ComposeBasics {
     val lessons: List<Lesson> = listOf(
         Lesson(
@@ -891,7 +891,7 @@ object ComposeBasics {
                         │   ├── content/             // 课程内容
                         │   │   ├── KotlinBasics.kt  //   模块一（14 课）
                         │   │   ├── AndroidCore.kt   //   模块二（12 课）
-                        │   │   ├── ComposeBasics.kt //   模块三（10 课）
+                        │   │   ├── ComposeBasics.kt //   模块三（14 课）
                         │   │   └── Curriculum.kt    //   聚合：modules + findLesson + totalLessonCount
                         │   ├── logic/               // 校验器、判分等纯逻辑
                         │   └── progress/ProgressStore.kt  // 学习进度持久化
@@ -1060,6 +1060,427 @@ object ComposeBasics {
                     ),
                     correctIndex = 1,
                     explanation = "项目驱动 + 按需深挖是最有效的路径：每个真实功能都会逼你把一个知识点学透并立即用上。",
+                ),
+            ),
+        ),
+        Lesson(
+            id = "compose-11",
+            title = "对话框与底部弹层",
+            concept = """
+                有些 UI 是"临时"的：确认弹窗、分享面板。它们**不在常规布局里占位**，出现与否完全由状态决定。
+
+                ## AlertDialog：确认对话框
+
+                - `showDialog` 为 true 时才组合出对话框
+                - `onDismissRequest` 处理点遮罩/返回键的关闭
+                - `confirmButton` 与 `dismissButton` 放操作按钮
+
+                ## ModalBottomSheet：底部弹层
+
+                从屏幕底部滑出，支持拖拽关闭，常放一组操作列表。本质与对话框相同：**一个布尔状态控制显隐**。
+
+                ## 与普通页面的区别
+
+                对话框不进导航栈——它是叠加在当前页面上的一层，关闭后原页面状态原样保留。
+            """.trimIndent(),
+            codeExamples = listOf(
+                CodeExample(
+                    description = "一个由状态控制的确认对话框：",
+                    code = """
+                        var showDialog by remember { mutableStateOf(false) }
+
+                        Button(onClick = { showDialog = true }) { Text("删除") }
+
+                        if (showDialog) {
+                            AlertDialog(
+                                onDismissRequest = { showDialog = false },
+                                title = { Text("删除笔记") },
+                                text = { Text("删除后无法恢复，确定吗？") },
+                                confirmButton = {
+                                    TextButton(onClick = { showDialog = false }) { Text("删除") }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showDialog = false }) { Text("取消") }
+                                },
+                            )
+                        }
+                    """.trimIndent(),
+                ),
+            ),
+            cppComparison = """
+                · C++ 桌面开发的模态对话框（如 Qt 的 `QDialog::exec()`）会**阻塞事件循环**；Compose 的对话框不阻塞，只是组合树里多了一层。
+                · Qt 的对话框通常 new 一个对象、用完 delete；Compose 里没有对话框对象，只有 `showDialog` 这个状态。
+                · 点遮罩关闭 ≈ C++ 里拒绝模态返回码，但这里是回调 `onDismissRequest`，你自己决定怎么更新状态。
+                · 临时 UI 不进导航栈——类比 C++ 里"函数内的临时窗口"而非"新注册的窗口类"。
+            """.trimIndent(),
+            questions = listOf(
+                QuizQuestion(
+                    question = "Compose 中控制对话框出现/消失的机制是？",
+                    options = listOf(
+                        "一个 remember 的布尔状态",
+                        "调用 exec() 阻塞等待",
+                        "全局对话框管理器",
+                        "手动 addView/removeView",
+                    ),
+                    correctIndex = 0,
+                    explanation = "对话框与计数器是同一个思想：状态变化驱动重组。showDialog = true 时 AlertDialog 进入组合，false 时移出。",
+                ),
+                QuizQuestion(
+                    question = "用户点击对话框外的遮罩时，会触发哪个回调？",
+                    options = listOf("confirmButton", "onDismissRequest", "dismissButton", "onClick"),
+                    correctIndex = 1,
+                    explanation = "onDismissRequest 在用户以\"非按钮方式\"（遮罩、返回键）关闭时调用，你必须在这里把状态翻回 false，否则对话框关不上。",
+                ),
+                QuizQuestion(
+                    question = "关闭对话框后，被它遮挡的页面状态会怎样？",
+                    options = listOf("重新初始化", "原样保留", "部分丢失", "取决于对话框类型"),
+                    correctIndex = 1,
+                    explanation = "对话框不进导航栈，只是叠加层；关闭后原组合树与状态原样保留。这与导航到新页面再返回不同。",
+                ),
+                QuizQuestion(
+                    question = "下列哪个场景更适合 ModalBottomSheet 而不是 AlertDialog？",
+                    options = listOf(
+                        "删除前二次确认",
+                        "展示一组可选操作（收藏/分享/重命名）",
+                        "输入密码",
+                        "显示错误提示",
+                    ),
+                    correctIndex = 1,
+                    explanation = "底部弹层适合承载一组并列操作列表；AlertDialog 适合简短的确认/警示。内容多且需要滚动时弹层体验更好。",
+                ),
+            ),
+        ),
+        Lesson(
+            id = "compose-12",
+            title = "页面骨架 Scaffold",
+            concept = """
+                一个页面除了正文，往往还有顶栏、悬浮按钮、轻提示条。Compose 用 **Scaffold（脚手架）** 把这些"页面骨架"元素一次性安排好。
+
+                ## 为什么需要脚手架
+
+                - 自己用 Box 把顶栏和内容叠起来，就得**手动计算内容区留白**：顶栏多高？正文从哪开始？改一版布局就全要重算
+                - Scaffold 替你**量好尺寸**：各骨架元素的占用汇成一个 `innerPadding`，正文扣除它之后正好铺满剩余空间
+
+                ## 槽位（Slot）API：各归其位
+
+                - `topBar`：顶栏槽位，常放 `TopAppBar`（标题 + 操作按钮）
+                - `floatingActionButton`：悬浮按钮（FAB），页面主操作的入口
+                - `snackbarHost`：轻提示宿主，`Snackbar` 从这里弹出、几秒后自动消失
+
+                ## Snackbar 也是状态
+
+                - 弹 Snackbar 不是"调一个弹窗函数"：先 `remember { SnackbarHostState() }`，再在协程里调用 `showSnackbar("已保存")`
+                - 本质仍是状态驱动：**消息在宿主里排队显示**，协程被取消时提示随之停止——复习第 10 课的 `rememberCoroutineScope`
+            """.trimIndent(),
+            codeExamples = listOf(
+                CodeExample(
+                    description = "Scaffold + TopAppBar + FAB + Snackbar 的标准组合：",
+                    code = """
+                        val snackbarHostState = remember { SnackbarHostState() }
+                        val scope = rememberCoroutineScope()
+
+                        Scaffold(
+                            topBar = { TopAppBar(title = { Text("我的笔记") }) },
+                            snackbarHost = { SnackbarHost(snackbarHostState) },
+                            floatingActionButton = {
+                                FloatingActionButton(onClick = {
+                                    scope.launch { snackbarHostState.showSnackbar("笔记已保存") }
+                                }) {
+                                    Text("+")
+                                }
+                            },
+                        ) { innerPadding ->
+                            // innerPadding 已扣除顶栏等骨架的占用，正文用它避免被遮挡
+                            LazyColumn(
+                                modifier = Modifier.padding(innerPadding),
+                            ) {
+                                items(notes, key = { it.id }) { note -> NoteRow(note) }
+                            }
+                        }
+                    """.trimIndent(),
+                ),
+            ),
+            cppComparison = """
+                · Scaffold ≈ Qt 的 `QMainWindow`：menuBar、toolbar、statusBar、centralWidget 各归其位——你只往**具名槽位**里填东西，不手动算坐标。
+                · `innerPadding` ≈ centralWidget 的可用矩形：框架算好"骨架占了多少"，正文只管填进剩余区域，**改布局不用重算留白**。
+                · Snackbar ≈ `QStatusBar::showMessage`：都是几秒自动消失的轻提示；区别是这里消息**排队**且绑定协程生命周期，不是阻塞调用。
+                · FAB 是移动端特有的交互元素，桌面没有直接对应物——它悬浮在"拇指最容易够到"的位置，承载单一主操作。
+            """.trimIndent(),
+            questions = listOf(
+                QuizQuestion(
+                    question = "Scaffold 内容 lambda 里的 innerPadding 是什么？",
+                    options = listOf(
+                        "固定 16.dp 的装饰边距",
+                        "已扣除 topBar/bottomBar 等骨架占用后的留白，正文应用它避免被遮挡",
+                        "控制骨架动画时长的参数",
+                        "状态栏图标颜色",
+                    ),
+                    correctIndex = 1,
+                    explanation = "Scaffold 量好顶栏、底栏等骨架元素的实际占用，汇成 innerPadding；正文 padding(innerPadding) 才不会被遮挡。",
+                ),
+                QuizQuestion(
+                    question = "显示 Snackbar 的正确方式是？",
+                    options = listOf(
+                        "调用 Scaffold 的 show() 方法",
+                        "new 一个 Snackbar 对象并 addView",
+                        "在协程里调用 snackbarHostState.showSnackbar(\"...\")",
+                        "弹一个 AlertDialog 再自动关闭",
+                    ),
+                    correctIndex = 2,
+                    explanation = "SnackbarHostState 是弹 Snackbar 的唯一入口：showSnackbar 是挂起函数，消息排队显示，协程取消时提示停止。",
+                ),
+                QuizQuestion(
+                    question = "悬浮按钮（FAB）应该通过 Scaffold 的哪个槽位放入？",
+                    options = listOf("topBar", "snackbarHost", "bottomBar", "floatingActionButton"),
+                    correctIndex = 3,
+                    explanation = "floatingActionButton 槽位负责 FAB 的位置与出入场动画；topBar 放顶栏，snackbarHost 放轻提示宿主。",
+                ),
+                QuizQuestion(
+                    question = "为什么 showSnackbar 要在协程作用域里调用？",
+                    options = listOf(
+                        "它是挂起函数：显示期间可等待、可取消，多条消息自动排队",
+                        "协程能让提示显示得更快",
+                        "Snackbar 只能在后台线程创建",
+                        "不这么做会内存泄漏 Activity",
+                    ),
+                    correctIndex = 0,
+                    explanation = "showSnackbar 挂起直到提示消失，事件回调里用 rememberCoroutineScope 启动；离开组合时协程取消，提示干净收场。",
+                ),
+            ),
+        ),
+        Lesson(
+            id = "compose-13",
+            title = "输入组件与表单",
+            concept = """
+                凡是让用户"打字"的地方都绕不开表单。Compose 输入框的核心契约只有一行：`value` 进、`onValueChange` 出。
+
+                ## 单向数据流：状态是唯一事实源
+
+                - 输入框**不自己保存文字**：文字是 `remember` 的状态；`onValueChange` 把"用户又敲了字符"这个事件上报，你更新状态，输入框重组显示新值（复习第 4、5 课）
+                - 好处：验证、清空、回显都只改一处状态——"清空"按钮只需把状态置为空字符串，界面自动跟上
+
+                ## 错误提示：isError 与 supportingText
+
+                - `isError = true` 让输入框整体变成错误色（来自主题的 error 色，见第 7 课）
+                - `supportingText` 是输入框下方的一行小字：平时放提示语，出错时放**"为什么错"**
+                - 校验结果建议写成**派生值**（`val hasError = ...`），而不是在 onValueChange 里塞一堆 if
+
+                ## 键盘行为定制
+
+                - `KeyboardOptions(keyboardType = ...)`：邮箱用 `KeyboardType.Email`、密码用 `KeyboardType.Password`，数字/电话各有对应类型
+                - `imeAction` 控制"回车键"的样子与语义（Next/Done/Search）
+                - 密码打码用 `PasswordVisualTransformation()`——它只改**显示**，`value` 里始终是真实文本
+            """.trimIndent(),
+            codeExamples = listOf(
+                CodeExample(
+                    description = "带校验与错误提示的登录表单：",
+                    code = """
+                        var username by remember { mutableStateOf("") }
+                        var password by remember { mutableStateOf("") }
+                        val hasError = username.isNotEmpty() && username.contains(' ')
+
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            OutlinedTextField(
+                                value = username,
+                                onValueChange = { username = it },   // 事件向上，状态是唯一事实源
+                                label = { Text("用户名") },
+                                isError = hasError,
+                                supportingText = { if (hasError) Text("用户名不能包含空格") },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Email, imeAction = ImeAction.Next,
+                                ),
+                            )
+                            OutlinedTextField(
+                                value = password,
+                                onValueChange = { password = it },
+                                label = { Text("密码") },
+                                visualTransformation = PasswordVisualTransformation(),  // 只打码显示
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Password, imeAction = ImeAction.Done,
+                                ),
+                            )
+                            Button(
+                                onClick = { onLogin(username, password) },
+                                enabled = username.isNotBlank() && password.length >= 6,
+                            ) {
+                                Text("登录")
+                            }
+                        }
+                    """.trimIndent(),
+                ),
+                CodeExample(
+                    description = "状态是唯一事实源的直接收益——清空只需一行：",
+                    code = """
+                        Button(onClick = { username = ""; password = "" }) { Text("清空") }
+                        // 两个输入框立即变空：无需逐个拿到控件"引用"再清值，重组自动完成
+                    """.trimIndent(),
+                ),
+            ),
+            cppComparison = """
+                · Qt 信号槽是**多对多广播**：控件自己也持有一份文本，`text()` 取、`setText()` 改，两处状态要对账；UDF 把事实源收敛到你的状态变量，输入框只是投影。
+                · `value` ≈ getState，`onValueChange` ≈ setState 请求：读写分离，和 C++ 里"const getter + 受控 setter"的接口纪律同源。
+                · `isError` + `supportingText` ≈ QValidator + 一行错误 label：校验逻辑同样应该派生自数据，而不是散落在事件处理里。
+                · `KeyboardType` ≈ 输入掩码/校验器的提示位：告诉输入法"该弹什么键盘"，但**不替代校验**——真正把关的永远是你的状态校验。
+            """.trimIndent(),
+            questions = listOf(
+                QuizQuestion(
+                    question = "为什么输入框文字要放在外部状态里（value + onValueChange），而不是让控件自己保存？",
+                    options = listOf(
+                        "Compose 不支持控件内部存文字",
+                        "状态是唯一事实源：验证、清空、回显、提交都只读这一处，不会出现界面与数据不同步",
+                        "这样渲染速度更快",
+                        "是为了兼容旧版 View 系统",
+                    ),
+                    correctIndex = 1,
+                    explanation = "单向数据流下文字只存一份：登录按钮的 enabled、错误提示、提交逻辑全都从同一状态派生，天然一致。",
+                ),
+                QuizQuestion(
+                    question = "PasswordVisualTransformation 会改变 value 里的内容吗？",
+                    options = listOf(
+                        "会，value 变成密文",
+                        "不会，它只改变显示；value 始终是用户输入的真实文本",
+                        "会把密码加密后写入磁盘",
+                        "会拦截所有输入",
+                    ),
+                    correctIndex = 1,
+                    explanation = "Transformation 只作用于显示层的视觉转换，提交/校验用的仍是原始 value——类似 QLineEdit 的 echoMode。",
+                ),
+                QuizQuestion(
+                    question = "想让密码框弹出专用键盘，应设置哪个参数？",
+                    options = listOf(
+                        "keyboardType = KeyboardType.Password（在 KeyboardOptions 里）",
+                        "imeAction = ImeAction.Password",
+                        "visualTransformation = KeyboardType()",
+                        "isPassword = true",
+                    ),
+                    correctIndex = 0,
+                    explanation = "KeyboardOptions(keyboardType = ...) 决定输入法键盘类型；imeAction 只控制回车键语义；打码是 visualTransformation 的职责。",
+                ),
+                QuizQuestion(
+                    question = "用户点\"清空\"按钮，最符合单向数据流的做法是？",
+                    options = listOf(
+                        "找到输入框引用，调用它的清空方法",
+                        "把两个状态变量置为空字符串，界面随重组自动清空",
+                        "销毁并重建整个表单组件",
+                        "在 onValueChange 里拦截下一次输入",
+                    ),
+                    correctIndex = 1,
+                    explanation = "只改状态、不动界面：状态是唯一事实源，输入框只是投影——这正是状态提升带来的收益。",
+                ),
+            ),
+        ),
+        Lesson(
+            id = "compose-14",
+            title = "开关控制组件",
+            concept = """
+                Switch、Slider、FilterChip 都属于"控制组件"——它们展示的不是一段内容，而是**一种选择状态**，且各自对应不同的数据模型。
+
+                ## 三种状态模型
+
+                - `Switch`：**布尔**——`checked: Boolean` + `onCheckedChange: (Boolean) -> Unit`
+                - `Slider`：**浮点**——`value: Float` + `onValueChange: (Float) -> Unit`，用 `valueRange = 0f..1f` 限定取值区间
+                - `FilterChip`：**集合成员**——`selected = tag in selectedTags`，点击时对集合做增删
+
+                ## 多选 = 集合运算
+
+                - Chip 多选**不要**给每个芯片配一个布尔变量——那是把"集合"硬拆成零散标志位，增删筛选条件时全要重写
+                - 惯用做法是持有一个**不可变 Set 状态**，点击时整份替换：`if (tag in tags) tags - tag else tags + tag`——旧集合不被修改，重组自动刷新
+
+                ## 控制组件天生适合状态提升
+
+                - 三者的签名正是第 5 课的"三件套"（value/onValueChange），适合保持**无状态**、把状态上提给需要的层级
+                - 本课示例把 Slider 的浮点值直接喂给预览区的透明度：**一个状态，多处派生**——开关、预览、数值文本永远一致
+            """.trimIndent(),
+            codeExamples = listOf(
+                CodeExample(
+                    description = "布尔 / 浮点 / 集合三种状态模型 + Slider 联动透明度：",
+                    code = """
+                        var soundOn by remember { mutableStateOf(false) }          // Switch：布尔
+                        var opacity by remember { mutableStateOf(1f) }             // Slider：浮点
+                        var tags by remember { mutableStateOf(setOf("Kotlin")) }   // FilterChip：集合
+
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("提示音")
+                                Switch(checked = soundOn, onCheckedChange = { soundOn = it })
+                            }
+                            Slider(
+                                value = opacity,
+                                onValueChange = { opacity = it },
+                                valueRange = 0f..1f,
+                            )
+                            Text("透明度：${'$'}{(opacity * 100).toInt()}%")
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(40.dp)
+                                    .background(
+                                        MaterialTheme.colorScheme.primary.copy(alpha = opacity)
+                                    )
+                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                listOf("Kotlin", "Compose", "Android").forEach { tag ->
+                                    FilterChip(
+                                        selected = tag in tags,
+                                        onClick = { tags = if (tag in tags) tags - tag else tags + tag },
+                                        label = { Text(tag) },
+                                    )
+                                }
+                            }
+                        }
+                    """.trimIndent(),
+                ),
+            ),
+            cppComparison = """
+                · 多选筛选的 C++ 习惯是位标志：`flags |= TAG_KOTLIN; flags &= ~TAG_KOTLIN`——数学上就是集合运算，但可读性差、优先级易错；`set + tag / set - tag` 一眼可读。
+                · Switch 的 checked + onCheckedChange ≈ 一个"受控"的 QCheckBox：勾选状态**不在控件里**，而在你持有的状态里，控件永远是状态的投影。
+                · Slider 拖动直改 value ≈ 直接给变量赋值：框架观察到变化就重画，不需要 connect valueChanged 再手动 repaint。
+                · 整份替换不可变 Set ≈ C++ 的值语义：旧值不被共享、不存在"别人还在引用被我改了"的问题，观察者天然安全。
+            """.trimIndent(),
+            questions = listOf(
+                QuizQuestion(
+                    question = "FilterChip 多选的推荐状态模型是？",
+                    options = listOf(
+                        "每个芯片对应一个布尔变量",
+                        "一个不可变 Set 状态，点击时整份替换（增/删成员）",
+                        "一个全局 Int 位标志",
+                        "把选中项写进共享偏好",
+                    ),
+                    correctIndex = 1,
+                    explanation = "集合用一个 Set 表达\"谁是成员\"：tags - tag / tags + tag 整份替换，增删筛选条件不用改结构，重组自动刷新。",
+                ),
+                QuizQuestion(
+                    question = "把 Slider 限制在 0f..1f 范围内，用哪个参数？",
+                    options = listOf("valueRange", "limits", "maxValue", "stepRange"),
+                    correctIndex = 0,
+                    explanation = "valueRange = 0f..1f 限定取值区间；不设则默认 0f..1f，也可以配合 steps 生成离散刻度。",
+                ),
+                QuizQuestion(
+                    question = "Switch(checked = ..., onCheckedChange = ...) 的签名属于哪种模式？",
+                    options = listOf(
+                        "状态提升的 value/onValueChange 三件套（无状态组件）",
+                        "信号槽多对多广播",
+                        "命令式的 get/set 封装",
+                        "单例持有的内部状态",
+                    ),
+                    correctIndex = 0,
+                    explanation = "checked 进、onCheckedChange 出：开关自身不持状态，谁拥有状态谁处理变更——和第 5 课的三件套完全一致。",
+                ),
+                QuizQuestion(
+                    question = "为什么用 tags = tags - tag 而不是对集合就地删除？",
+                    options = listOf(
+                        "就地删除性能太差",
+                        "状态是不可变 Set，本身没有 remove；整份替换新引用才能被 Compose 观察到并触发重组",
+                        "语法限制，Kotlin 不支持可变集合",
+                        "为了省内存",
+                    ),
+                    correctIndex = 1,
+                    explanation = "mutableStateOf 观察的是\"引用被换成新值\"；不可变集合每次运算返回新集合，替换即通知，旧集合不受影响。",
                 ),
             ),
         ),

@@ -8,9 +8,9 @@ import org.junit.Test
 
 class CurriculumContentTest {
     @Test
-    fun `全课程共 3 模块 36 课`() {
+    fun `全课程共 3 模块 40 课`() {
         assertEquals(3, Curriculum.modules.size)
-        assertEquals(36, Curriculum.modules.sumOf { it.lessons.size })
+        assertEquals(40, Curriculum.modules.sumOf { it.lessons.size })
         assertEquals(listOf("kotlin-basics", "android-core", "compose-basics"),
             Curriculum.modules.map { it.id })
     }
