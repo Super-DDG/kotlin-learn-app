@@ -12,10 +12,22 @@ object ComposeBasics {
             id = "compose-01",
             title = "声明式 UI 思想",
             concept = """
-                传统 Android View 体系是"命令式"的：你要拿到 TextView 的引用，手动调用 setText()，界面状态散落在几十处赋值语句里，改一处漏一处就出 bug。Jetpack Compose 是"声明式"的：你只描述"界面在当前状态下应该长什么样"，状态一变，Compose 自动重新执行相关函数并把界面刷新到最新——这个自动重画的过程叫重组（Recomposition）。
-                声明式 UI 的核心公式：UI = f(state)。界面是状态的函数，状态是唯一的事实来源（Single Source of Truth），你不再写"怎么改界面"，只写"界面长什么样"。
-                这不是 Android 独有的转向：React、Flutter、SwiftUI 全是同一套思想，学会 Compose 再看其他框架几乎是"换门语法"。
-                本 App 从这一模块起全面使用 Compose：整个界面由 Composable 函数搭建，没有一行 XML 布局。
+                传统 Android View 体系是"命令式"的，Jetpack Compose 是"声明式"的——你只描述"界面在当前状态下应该长什么样"，状态一变，界面自动刷新到最新。
+
+                ## 命令式 vs 声明式
+
+                - 命令式：你要拿到 TextView 的引用，手动调用 `setText()`，界面状态**散落在几十处赋值语句里**，改一处漏一处就出 bug
+                - 声明式：状态一变，Compose **自动重新执行相关函数**并把界面刷新到最新——这个自动重画的过程叫**重组（Recomposition）**
+
+                ## 核心公式：UI = f(state)
+
+                - 界面是**状态的函数**，状态是**唯一的事实来源**（Single Source of Truth）
+                - 你不再写"怎么改界面"，只写"界面长什么样"
+
+                ## 不止 Android 独有
+
+                - React、Flutter、SwiftUI 全是同一套思想，学会 Compose 再看其他框架几乎是"换门语法"
+                - 本 App 从这一模块起**全面使用 Compose**：整个界面由 Composable 函数搭建，**没有一行 XML 布局**
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -40,10 +52,10 @@ object ComposeBasics {
                 ),
             ),
             cppComparison = """
-                · 类比 C++ 的"数据驱动重绘"：就像 Qt 里你自己 connect 信号到 update()，而 Compose 把"监听变化 + 局部重绘"全部自动化了。
+                · 类比 C++ 的"数据驱动重绘"：就像 Qt 里你自己 `connect` 信号到 `update()`，而 Compose 把"监听变化 + 局部重绘"全部自动化了。
                 · 命令式 UI ≈ 手写汇编，声明式 UI ≈ 高级语言：你声明意图，编译器（框架）负责最优执行。
-                · UI = f(state) 很像纯函数思想：同样的输入（state）永远得到同样的输出（界面），没有隐藏的可变中间状态。
-                · 陷阱：不要在 Composable 里缓存"上一次的界面值"去做增量修改——那是命令式思维，交给 Compose 重算即可。
+                · `UI = f(state)` 很像纯函数思想：同样的输入（state）永远得到同样的输出（界面），没有隐藏的可变中间状态。
+                · 陷阱：**不要在 Composable 里缓存"上一次的界面值"去做增量修改**——那是命令式思维，交给 Compose 重算即可。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -96,10 +108,22 @@ object ComposeBasics {
             id = "compose-02",
             title = "Composable 函数",
             concept = """
-                Compose 界面的基本单位是 Composable 函数：一个标注 @Composable 的普通 Kotlin 函数，接收参数、输出界面描述。它有三大特点：函数名用名词（如 Greeting 而不是 ShowGreeting）、可以有参数、没有返回值——它"发射"UI 而不是构造对象。
-                @Composable 不是魔法：它只是一个标记，告诉编译器"这个函数会被 Compose 运行时调度调用，可能被反复执行（重组），也可能被跳过"。所以 Composable 里不要做耗时操作、不要有副作用（如写文件、改全局变量）。
-                Composable 只能被其他 Composable 调用，这个约束靠编译器强制——类似 suspend 函数只能在 suspend 上下文里调用。
-                预览：在函数上加 @Preview 注解，Android Studio 能不装 App 直接渲染这个函数的效果，改一改立刻看到，这是 Compose 开发效率的最大来源。
+                Compose 界面的基本单位是 **Composable 函数**：一个标注 `@Composable` 的普通 Kotlin 函数，接收参数、输出界面描述。
+
+                ## 三大特点
+
+                - 函数名用**名词**（如 `Greeting` 而不是 `ShowGreeting`）
+                - 可以有参数；**没有返回值**——它"发射"UI 而不是构造对象
+
+                ## @Composable 不是魔法
+
+                - 它只是一个标记，告诉编译器"这个函数会被 Compose 运行时调度调用，**可能被反复执行（重组），也可能被跳过**"
+                - 所以 Composable 里**不要做耗时操作、不要有副作用**（如写文件、改全局变量）
+
+                ## 调用约束与 @Preview 预览
+
+                - Composable **只能被其他 Composable 调用**，这个约束靠编译器强制——类似 suspend 函数只能在 suspend 上下文里调用
+                - 在函数上加 `@Preview` 注解，Android Studio 能**不装 App 直接渲染**这个函数的效果，改一改立刻看到——这是 Compose 开发效率的最大来源
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -133,10 +157,10 @@ object ComposeBasics {
                 ),
             ),
             cppComparison = """
-                · @Composable 类似给函数打上"执行上下文"标记，和 C++20 用 co_await/co_yield/co_return 关键字标记可挂起函数的思路、C# 的 async 关键字同一脉络：编译器据此改写调用约定。
-                · "只能被 Composable 调用"的检查在 C++ 里要靠 code review，在 Kotlin 里编译器直接报错——语言级约束更可靠。
-                · Composable 函数可能被调用 N 次、以任意顺序调用，不要假设"调用次数 = 界面刷新次数"，这和 C++ 里"函数调用一次执行一次"的直觉相反。
-                · UI 即函数调用树：Column { Text() } ≈ 构造一棵节点树，但节点对象由框架复用，你不持有引用。
+                · `@Composable` 类似给函数打上"执行上下文"标记，和 C++20 用 `co_await`/`co_yield`/`co_return` 关键字标记可挂起函数的思路、C# 的 `async` 关键字同一脉络：编译器据此改写调用约定。
+                · "只能被 Composable 调用"的检查在 C++ 里要靠 code review，在 Kotlin 里编译器直接报错——**语言级约束更可靠**。
+                · Composable 函数可能被调用 N 次、以任意顺序调用，**不要假设"调用次数 = 界面刷新次数"**，这和 C++ 里"函数调用一次执行一次"的直觉相反。
+                · UI 即函数调用树：`Column { Text() }` ≈ 构造一棵节点树，但节点对象由框架复用，你不持有引用。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -189,10 +213,23 @@ object ComposeBasics {
             id = "compose-03",
             title = "常用组件：Text/Button/Column/Row",
             concept = """
-                Compose 没有预置的"几十种控件"，只有少量原子组件 + Modifier（修饰符）组合出一切。最常用的四件套：Text 显示文字；Button 触发点击（内容也是 Composable，所以按钮里能放图标+文字）；Column 纵向排列子项；Row 横向排列子项。
-                Modifier 是每个组件的"万能参数"：padding、fillMaxSize、background、clickable、weight……按链式顺序生效，顺序不同结果不同——.padding(8.dp).background(红) 和 .background(红).padding(8.dp) 画出来的大小不一样。
-                Column/Row 的子项可以用 weight(1f) 按"剩余空间的比例"分配，类似前端的 flex-grow；对齐方式用 verticalAlignment / horizontalAlignment 参数指定。
-                这些组件的默认样式来自 Material 3（见本模块第 7 课）：Button 自带圆角、涟漪反馈与主题色，你几乎不用自己画。
+                Compose 没有预置的"几十种控件"，只有**少量原子组件 + Modifier（修饰符）**组合出一切，最常用的是四件套。
+
+                ## 最常用四件套
+
+                - `Text` 显示文字
+                - `Button` 触发点击——内容也是 Composable，所以按钮里能放**图标 + 文字**
+                - `Column` 纵向排列子项；`Row` 横向排列子项
+
+                ## Modifier：万能参数
+
+                - `padding`、`fillMaxSize`、`background`、`clickable`、`weight`……按**链式顺序生效**，顺序不同结果不同
+                - `.padding(8.dp).background(红)` 和 `.background(红).padding(8.dp)` 画出来的**大小不一样**
+
+                ## 剩余空间、对齐与默认样式
+
+                - 子项可以用 `weight(1f)` 按"**剩余空间的比例**"分配，类似前端的 flex-grow；对齐方式用 `verticalAlignment` / `horizontalAlignment` 参数指定
+                - 这些组件的默认样式来自 Material 3（见本模块第 7 课）：`Button` 自带**圆角、涟漪反馈与主题色**，你几乎不用自己画
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -234,9 +271,9 @@ object ComposeBasics {
                 ),
             ),
             cppComparison = """
-                · Modifier 链 ≈ 管道式变换：像 C++ 里 std::views::filter | transform 的顺序敏感组合，前后互换结果不同。
-                · Column/Row ≈ Qt 的 QVBoxLayout/QHBoxLayout，但"布局参数"（weight、对齐）直接是子项的 Modifier，不另设 LayoutParams 对象。
-                · 没有控件引用可拿：你不能像 C++/Qt 那样 button->setText()——想改变外观，改传入的数据，让重组去刷新。
+                · Modifier 链 ≈ 管道式变换：像 C++ 里 `std::views::filter | transform` 的顺序敏感组合，前后互换结果不同。
+                · `Column`/`Row` ≈ Qt 的 `QVBoxLayout`/`QHBoxLayout`，但"布局参数"（weight、对齐）直接是子项的 Modifier，不另设 LayoutParams 对象。
+                · **没有控件引用可拿**：你不能像 C++/Qt 那样 `button->setText()`——想改变外观，改传入的数据，让重组去刷新。
                 · 原子组件 + 组合的思路 ≈ 标准库容器 + 算法：少量正交原语，胜过庞大但僵硬的类库。
             """.trimIndent(),
             questions = listOf(
@@ -290,10 +327,25 @@ object ComposeBasics {
             id = "compose-04",
             title = "状态与重组",
             concept = """
-                Compose 里"会变的界面数据"必须是 State<T>。用 mutableStateOf(0) 创建可观察状态，再包一层 remember 让它在重组之间"记住"上一次的值——没有 remember，每次重组都会重新初始化为 0，界面看起来"点了没反应"。惯用写法是配 delegate：var count by remember { mutableStateOf(0) }，之后读写 count 就像普通变量，但框架在暗中观察。
-                触发重组的规则很精确：只有"读取了这个 State"的 Composable 会在状态变化时重组，其他部分不受影响。Compose 在编译期插桩、运行期记录谁读了哪个状态，实现最小范围刷新。
-                remember 有个变体 rememberSaveable：能在 Activity 因旋转等配置变更被销毁重建时自动保存恢复（内部走 Bundle）。remember 在重建后会丢失。
-                三个易错点：一、忘写 remember 导致状态不生效；二、在 if/for 中直接 remember 导致位置混乱（应使用 key）；三、把可变状态对象当普通对象传递导致观察失效——始终用 by 委托或把 State 往上传。
+                Compose 里"会变的界面数据"必须是 `State<T>`——界面由可观察状态驱动。
+
+                ## 什么是状态
+
+                - 用 `mutableStateOf(0)` 创建**可观察状态**，再包一层 `remember` 让它在重组之间**记住上一次的值**
+                - 没有 `remember`，每次重组都会重新初始化为 0，界面看起来"点了没反应"
+                - 惯用写法是配 delegate：`var count by remember { mutableStateOf(0) }`，之后读写 `count` 就像普通变量，但**框架在暗中观察**
+
+                ## 什么是重组
+
+                - 只有**读取了这个 State** 的 Composable 会在状态变化时重组，其他部分不受影响
+                - Compose 在**编译期插桩、运行期记录**谁读了哪个状态，实现**最小范围刷新**
+                - `remember` 有个变体 `rememberSaveable`：能在 Activity 因旋转等配置变更被销毁重建时**自动保存恢复**（内部走 `Bundle`）；`remember` 在重建后会丢失
+
+                ## 常见误区
+
+                - 忘写 `remember` 导致状态不生效
+                - 在 if/for 中直接 `remember` 导致**位置混乱**（应使用 `key`）
+                - 把可变状态对象当普通对象传递导致**观察失效**——始终用 `by` 委托或把 State 往上传
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -322,10 +374,10 @@ object ComposeBasics {
                 ),
             ),
             cppComparison = """
-                · mutableStateOf ≈ 一个自带观察者模式的变量：赋值即"发布变更"，读取处自动"订阅"——C++ 里你得手写 std::function 回调或信号槽才能做到。
-                · remember ≈ 框架维护的静态局部变量：按"调用位置"作为 key 存储上次的值，与 C++ static 局部变量按定义点唯一化的机制神似。
-                · by 委托 ≈ 运算符重载：getValue/setValue 让 State 用起来和普通变量无异，本质还是对象的 get/set。
-                · 陷阱直觉迁移：C++ 里"局部变量每次进入作用域都重新初始化"，remember 恰恰相反——它是为跨重组持久而生，两者别混淆。
+                · `mutableStateOf` ≈ 一个自带观察者模式的变量：赋值即"发布变更"，读取处自动"订阅"——C++ 里你得手写 `std::function` 回调或信号槽才能做到。
+                · `remember` ≈ 框架维护的静态局部变量：按"调用位置"作为 key 存储上次的值，与 C++ `static` 局部变量按定义点唯一化的机制神似。
+                · `by` 委托 ≈ 运算符重载：`getValue`/`setValue` 让 State 用起来和普通变量无异，本质还是对象的 get/set。
+                · 陷阱直觉迁移：C++ 里"局部变量每次进入作用域都重新初始化"，`remember` 恰恰相反——**它是为跨重组持久而生**，两者别混淆。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -378,11 +430,26 @@ object ComposeBasics {
             id = "compose-05",
             title = "状态提升",
             concept = """
-                状态提升（State Hoisting）是 Compose 最重要的架构模式：把某个组件私有的状态"上提"到它的调用方，组件本身变成无状态（Stateless）。惯用签名是三件套：
-                value: T（当前值传入）、onValueChange: (T) -> Unit（回调请求改值）、以及可选的其他事件回调。组件内部不持有状态，只展示 value、把用户操作通过回调上报——数据向下流、事件向上流，这就是"单向数据流"（UDF）。
-                为什么这么做？一、状态上提后可以有多个使用者共享同一份事实来源（如输入框与提交按钮都依赖同一文本）；二、无状态组件更容易预览、测试和复用；三、状态的生命周期与"拥有它的层级"一致，避免泄漏。
-                经验法则：写到 remember 之前先问"谁需要这个状态"——只有自己用就留在原地；多个兄弟组件要用，就提到它们最近的公共父级。
-                本 App 的屏幕层就是典型：QuizScreen 持有"当前选择"，答题结果通过回调交给上层与 ProgressStore 打交道，屏幕自身不关心持久化细节。
+                状态提升（State Hoisting）是 Compose **最重要的架构模式**：把某个组件私有的状态"上提"到它的调用方，组件本身变成**无状态（Stateless）**。
+
+                ## 惯用签名：三件套
+
+                - `value: T`——当前值传入
+                - `onValueChange: (T) -> Unit`——回调请求改值
+                - 以及可选的其他事件回调
+
+                组件内部不持有状态，只展示 `value`、把用户操作通过回调上报——**数据向下流、事件向上流**，这就是"单向数据流"（UDF）。
+
+                ## 为什么要提升状态
+
+                - 状态上提后可以有**多个使用者共享同一份事实来源**（如输入框与提交按钮都依赖同一文本）
+                - 无状态组件更容易**预览、测试和复用**
+                - 状态的生命周期与"拥有它的层级"一致，**避免泄漏**
+
+                ## 经验法则与本 App 实践
+
+                - 写到 `remember` 之前先问"**谁需要这个状态**"：只有自己用就留在原地；多个兄弟组件要用，就提到它们**最近的公共父级**
+                - 本 App 的屏幕层就是典型：`QuizScreen` 持有"当前选择"，答题结果通过回调交给上层与 ProgressStore 打交道，屏幕自身**不关心持久化细节**
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -414,10 +481,10 @@ object ComposeBasics {
                 ),
             ),
             cppComparison = """
-                · 状态提升 ≈ 依赖注入：组件不自己 new 状态，由上层"传进来"，测试时可以随便造数据。
-                · 单向数据流 ≈ C++ 的"const 引用入参 + 回调出参"接口设计：数据只读向下，修改请求通过回调向上，禁止子组件反向篡改父级数据。
-                · 无状态组件 ≈ 纯函数：相同输入必得相同输出，@Preview 和单元测试都因此可行；有状态组件 ≈ 带内部可变状态的对象，慎用、且尽量薄。
-                · 与 MVC 里 View 直接改 Model 的老写法对比：UDF 把"谁能改状态"限制在单一层级，和 Rust 所有权思想一样，是在消灭"到处可写"的混乱。
+                · 状态提升 ≈ 依赖注入：组件不自己 `new` 状态，由上层"传进来"，测试时可以随便造数据。
+                · 单向数据流 ≈ C++ 的"const 引用入参 + 回调出参"接口设计：数据只读向下，修改请求通过回调向上，**禁止子组件反向篡改父级数据**。
+                · 无状态组件 ≈ 纯函数：相同输入必得相同输出，`@Preview` 和单元测试都因此可行；有状态组件 ≈ 带内部可变状态的对象，**慎用、且尽量薄**。
+                · 与 MVC 里 View 直接改 Model 的老写法对比：UDF 把"谁能改状态"限制在单一层级，和 Rust 所有权思想一样，是在**消灭"到处可写"的混乱**。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -470,10 +537,22 @@ object ComposeBasics {
             id = "compose-06",
             title = "LazyColumn 列表",
             concept = """
-                展示长列表时不能用 for 循环套 Column——那样所有条目会一次性全部创建和布局，1000 条数据就卡死了。LazyColumn 只组合并绘制"当前可见 + 少量缓存"的条目，滚到哪里建到哪里，滚出屏幕的条目被回收，性能与 RecyclerView 同级而代码量只有几行。
-                基本用法：items(list) { item -> ... } 逐条渲染；itemsIndexed 提供下标；item { } 插入独立的头部/尾部条目。给 items 传 key = { it.id }（稳定且唯一的 ID）能带来两个收益：滚动中插入/删除条目时动画正确、重组时正确复用与记住状态。
-                常用配套： Arrangement 控制主轴排列（spacedBy(8.dp) 设条目间距）、contentPadding 给列表整体留边。反向的 LazyRow 同理，横向滚动。
-                与状态配合的典型场景：列表数据来自 ViewModel/上层传入的 List，条目点击通过回调向上报告 ID——LazyColumn 自身保持无状态，正好复习上一课的状态提升。
+                展示长列表时**不能用 for 循环套 Column**——那样所有条目会一次性全部创建和布局，1000 条数据就卡死了。
+
+                ## LazyColumn：按需组合
+
+                - 只组合并绘制"**当前可见 + 少量缓存**"的条目，滚到哪里建到哪里，滚出屏幕的条目被回收
+                - 性能与 RecyclerView **同级**，而代码量只有几行
+
+                ## 基本用法与 key 的收益
+
+                - `items(list) { item -> ... }` 逐条渲染；`itemsIndexed` 提供下标；`item { }` 插入独立的头部/尾部条目
+                - 给 items 传 `key = { it.id }`（稳定且唯一的 ID）能带来两个收益：滚动中**插入/删除条目时动画正确**、重组时**正确复用与记住状态**
+
+                ## 常用配套与状态配合
+
+                - `Arrangement` 控制主轴排列（`spacedBy(8.dp)` 设条目间距）、`contentPadding` 给列表整体留边；反向的 `LazyRow` 同理，横向滚动
+                - 典型场景：列表数据来自 ViewModel/上层传入的 List，条目点击**通过回调向上报告 ID**——LazyColumn 自身**保持无状态**，正好复习上一课的状态提升
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -504,10 +583,10 @@ object ComposeBasics {
                 ),
             ),
             cppComparison = """
-                · LazyColumn ≈ 虚拟列表/视图回收：和 Qt 的 QListView + Model/Delegate、Web 前端的 virtual scroll 是同一性能思路——只为可见项买单。
-                · key = { it.id } ≈ std::map 的稳定键：没有 key，框架只能按"位置"对号入座，插入删除会导致状态串位（第 3 行的勾选跑到第 4 行）。
-                · items(courses) { ... } ≈ 范围 for 循环 + 按需求值：表面上像在遍历生成 UI，实际是惰性流。
-                · 传 List 进 LazyColumn 而 LazyColumn 不改它 ≈ const std::vector&：数据不可变地向下流，修改意图走回调。
+                · LazyColumn ≈ 虚拟列表/视图回收：和 Qt 的 `QListView` + Model/Delegate、Web 前端的 virtual scroll 是同一性能思路——**只为可见项买单**。
+                · `key = { it.id }` ≈ `std::map` 的稳定键：没有 key，框架只能按"位置"对号入座，插入删除会导致状态串位（第 3 行的勾选跑到第 4 行）。
+                · `items(courses) { ... }` ≈ 范围 for 循环 + 按需求值：表面上像在遍历生成 UI，实际是**惰性流**。
+                · 传 `List` 进 LazyColumn 而 LazyColumn 不改它 ≈ `const std::vector&`：数据不可变地向下流，修改意图走回调。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -560,10 +639,23 @@ object ComposeBasics {
             id = "compose-07",
             title = "Material 3 主题",
             concept = """
-                Material 3（Material You）是 Google 当前设计规范，Compose 里对应 androidx.compose.material3 库。主题的核心是 MaterialTheme(colorScheme, typography, shapes) { ... }：把颜色、字体、形状包进 CompositionLocal，向下传给所有组件——Button、Text 等自动取用，你不用手动传色值。
-                颜色不再是 primary/secondary 两个词，而是一整套 colorScheme：primary、onPrimary（叠在 primary 上的内容色）、surface、background、error……"onXxx"命名表示"画在 Xxx 之上的颜色"，对比度已由规范保证。
-                动态取色（Dynamic Color）是 Android 12+ 的亮点：用 dynamicLightColorScheme(context) 从用户壁纸提取色板，App 自动融入系统配色。本 App 的 KotlinLearnTheme 就按"Android 12+ 且允许时用动态色，否则回落到自定义深浅色方案"来实现。
-                用法纪律：界面代码永远写 MaterialTheme.colorScheme.primary、MaterialTheme.typography.titleMedium，绝不硬编码 Color(0xFFxxxxxx)——这样深色模式、动态色、品牌换肤才是一条命令的事。
+                Material 3（Material You）是 Google 当前设计规范，Compose 里对应 `androidx.compose.material3` 库。
+
+                ## 主题如何生效
+
+                - 核心是 `MaterialTheme(colorScheme, typography, shapes) { ... }`：把颜色、字体、形状包进 **CompositionLocal**，向下传给所有组件
+                - `Button`、`Text` 等**自动取用**，你不用手动传色值
+
+                ## colorScheme 与 onXxx 命名
+
+                - 颜色不再是 primary/secondary 两个词，而是一整套 **colorScheme**：`primary`、`onPrimary`（叠在 primary 上的内容色）、`surface`、`background`、`error`……
+                - "onXxx"命名表示"**画在 Xxx 之上的颜色**"，对比度已由规范保证
+
+                ## 动态取色与用法纪律
+
+                - **动态取色（Dynamic Color）**是 Android 12+ 的亮点：用 `dynamicLightColorScheme(context)` 从用户壁纸提取色板，App 自动融入系统配色
+                - 本 App 的 `KotlinLearnTheme` 就按"Android 12+ 且允许时用动态色，否则回落到自定义深浅色方案"来实现
+                - 用法纪律：界面代码永远写 `MaterialTheme.colorScheme.primary`、`MaterialTheme.typography.titleMedium`，**绝不硬编码 `Color(0xFFxxxxxx)`**——这样深色模式、动态色、品牌换肤才是一条命令的事
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -608,9 +700,9 @@ object ComposeBasics {
                 ),
             ),
             cppComparison = """
-                · MaterialTheme ≈ 编译期注入的全局配置：像把一份 const 配置结构体放进"作用域"，子树内随便读；CompositionLocal 相当于隐式上下文参数。
-                · colorScheme 的 onXxx ≈ 前景/背景成对出现的约束：规范替你保证了对比度，比 C++ 里手动算 RGB 亮度靠谱。
-                · 硬编码色值 ≈ 魔法数字：换主题/深色模式时全是雷，主题令牌（colorScheme.xxx）就是消灭魔法数字的命名常量。
+                · `MaterialTheme` ≈ 编译期注入的全局配置：像把一份 const 配置结构体放进"作用域"，子树内随便读；CompositionLocal 相当于隐式上下文参数。
+                · colorScheme 的 onXxx ≈ 前景/背景成对出现的约束：**规范替你保证了对比度**，比 C++ 里手动算 RGB 亮度靠谱。
+                · 硬编码色值 ≈ 魔法数字：换主题/深色模式时全是雷，**主题令牌（colorScheme.xxx）就是消灭魔法数字的命名常量**。
                 · 动态取色没有 C++ 对应物——它是"运行期读系统资源生成配置"，概念上接近读取注册表/环境变量来初始化全局配置。
             """.trimIndent(),
             questions = listOf(
@@ -664,10 +756,26 @@ object ComposeBasics {
             id = "compose-08",
             title = "导航",
             concept = """
-                Compose 时代的页面跳转用官方库 androidx.navigation:navigation-compose（当前稳定线 2.9.x）。核心三个角色：NavHost（承载页面的容器）、NavController（控制器，navigate/popBackStack 都由它发号施令）、以及一组"路由字符串 → Composable 屏幕"的映射。
-                最小骨架：rememberNavController() 创建控制器；NavHost(navController, startDestination = "home") 声明起始页；composable("route") { XxxScreen() } 注册路由；跳转用 navController.navigate("route")，返回用 navController.popBackStack() 或系统返回键。
-                传参用占位路由：composable("lesson/{lessonId}") { backStackEntry -> val id = backStackEntry.arguments?.getString("lessonId") }，跳转时 navigate("lesson/compose-01")。本 App 就是这么把课时 ID 从课程列表传到课程详情页的。
-                每个路由栈条目是一个独立 backStackEntry，其上的 rememberSaveable 状态自动保存——切页再返回，输入内容还在。复杂参数（对象）不要塞路由字符串，放到共享的 ViewModel 或轻量序列化即可。
+                Compose 时代的页面跳转用官方库 `androidx.navigation:navigation-compose`（当前稳定线 2.9.x）。
+
+                ## 三个核心角色
+
+                - `NavHost`：承载页面的**容器**
+                - `NavController`：控制器，`navigate`/`popBackStack` 都由它**发号施令**
+                - 一组"**路由字符串 → Composable 屏幕**"的映射
+
+                ## 最小骨架
+
+                - `rememberNavController()` 创建控制器
+                - `NavHost(navController, startDestination = "home")` 声明起始页
+                - `composable("route") { XxxScreen() }` 注册路由
+                - 跳转用 `navController.navigate("route")`，返回用 `navController.popBackStack()` 或**系统返回键**
+
+                ## 传参与栈状态
+
+                - 传参用占位路由：`composable("lesson/{lessonId}") { backStackEntry -> val id = backStackEntry.arguments?.getString("lessonId") }`，跳转时 `navigate("lesson/compose-01")`——本 App 就是这么把课时 ID 从课程列表传到课程详情页的
+                - 每个路由栈条目是一个**独立 backStackEntry**，其上的 `rememberSaveable` 状态自动保存——切页再返回，输入内容还在
+                - 复杂参数（对象）**不要塞路由字符串**，放到共享的 ViewModel 或轻量序列化即可
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -696,10 +804,10 @@ object ComposeBasics {
                 ),
             ),
             cppComparison = """
-                · NavController + 路由字符串 ≈ 命令行参数启动新进程：页面之间不持有彼此引用，只约定"路由协议"，耦合度比 C++ 窗口类互相 new 低得多。
-                · back stack ≈ 栈数据结构：navigate 是 push，popBackStack 是 pop，系统返回键默认 pop——和函数调用栈一个道理。
-                · 路由传参 ≈ printf 风格的格式化 + 解析：占位符 {lessonId} 与 getString 解析必须配套写对，类型不匹配会在运行期炸，类似 sscanf 的脆弱性。
-                · 每个路由是独立 backStackEntry ≈ 每层栈帧有独立局部状态：rememberSaveable 绑定栈帧，出栈即销毁。
+                · `NavController` + 路由字符串 ≈ 命令行参数启动新进程：页面之间不持有彼此引用，只约定"路由协议"，**耦合度比 C++ 窗口类互相 new 低得多**。
+                · back stack ≈ 栈数据结构：`navigate` 是 push，`popBackStack` 是 pop，系统返回键默认 pop——和函数调用栈一个道理。
+                · 路由传参 ≈ `printf` 风格的格式化 + 解析：占位符 `{lessonId}` 与 `getString` 解析必须配套写对，**类型不匹配会在运行期炸**，类似 `sscanf` 的脆弱性。
+                · 每个路由是独立 backStackEntry ≈ 每层栈帧有独立局部状态：`rememberSaveable` 绑定栈帧，**出栈即销毁**。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -752,10 +860,25 @@ object ComposeBasics {
             id = "compose-09",
             title = "本 App 源码剖析",
             concept = """
-                学完组件、状态、导航，我们把镜头转向这个学习 App 本身——它就是一份按官方分层组织的 Compose 工程。包结构按职责四层：data/model 定义纯数据类（Lesson、CodeExample、QuizQuestion、CourseModule）；data/content 存放全部课程内容（KotlinBasics、AndroidCore、ComposeBasics 与聚合入口 Curriculum）；data/progress 的 ProgressStore 负责学习进度存取；ui 层按 screens（Home/Course/Lesson/Quiz 四个屏幕）与 navigation（AppNav）组织界面。
-                数据流是单向的：用户在 QuizScreen 选择答案 → 事件回调向上 → 与 ProgressStore 交互记录进度 → 状态变化向下回流 → HomeScreen 的进度条重组刷新。UI 层从不直接读写存储，全部经由数据层的接口。
-                关键文件对照：data/model/Lesson.kt 是"一节课"的定义（concept 正文 + 代码示例 + C++ 对比 + 随堂测验）；data/content/Curriculum.kt 把三个模块聚合成 modules 列表并提供 findLesson(lessonId) 查询——导航层拿课时 ID 一查，就能把数据喂给 LessonScreen。
-                另外值得注意的是 ui/theme：Theme.kt 的 KotlinLearnTheme 包住整个 setContent 内容树，Material 3 令牌从根向下生效——这正是上一课"主题包住子树"的实战版。
+                学完组件、状态、导航，我们把镜头转向这个学习 App 本身——它就是一份**按官方分层组织的 Compose 工程**。
+
+                ## 包结构：按职责四层
+
+                - `data/model` 定义**纯数据类**（Lesson、CodeExample、QuizQuestion、CourseModule）
+                - `data/content` 存放**全部课程内容**（KotlinBasics、AndroidCore、ComposeBasics 与聚合入口 Curriculum）
+                - `data/progress` 的 ProgressStore 负责**学习进度存取**
+                - `ui` 层按 screens（Home/Course/Lesson/Quiz 四个屏幕）与 navigation（AppNav）组织界面
+
+                ## 单向数据流实战
+
+                - 用户在 `QuizScreen` 选择答案 → **事件回调向上** → 与 ProgressStore 交互记录进度 → **状态变化向下回流** → HomeScreen 的进度条重组刷新
+                - UI 层**从不直接读写存储**，全部经由数据层的接口
+
+                ## 关键文件对照
+
+                - `data/model/Lesson.kt` 是"一节课"的定义（concept 正文 + 代码示例 + C++ 对比 + 随堂测验）
+                - `data/content/Curriculum.kt` 把三个模块聚合成 modules 列表并提供 `findLesson(lessonId)` 查询——导航层拿课时 ID 一查，就能把数据喂给 LessonScreen
+                - 另外值得注意的是 `ui/theme`：Theme.kt 的 `KotlinLearnTheme` 包住整个 `setContent` 内容树，Material 3 令牌从根向下生效——正是上一课"主题包住子树"的**实战版**
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -799,10 +922,10 @@ object ComposeBasics {
                 ),
             ),
             cppComparison = """
-                · Kotlin 的 package 按目录分层，但不需要头文件：声明与实现都在 .kt 里，没有 .h/.cpp 分离——import 就是唯一的"#include"。
-                · C++ 工程常见 include/、src/、lib/ 分层；本工程 data/（数据）、ui/（界面）、logic 的拆分思路一致：接口与实现、数据与表现解耦。
-                · object Curriculum 单例 ≈ C++ 的静态类/命名空间级常量表：全局唯一、首次访问时才懒初始化（线程安全，无需手动加锁），用它做"课程注册表"正合适。
-                · data class 的一行定义 ≈ C++ 里手写 struct + 构造函数 + 比较运算符 + 拷贝的全部样板——编译器替你生成了 equals/hashCode/copy。
+                · Kotlin 的 `package` 按目录分层，但不需要头文件：声明与实现都在 `.kt` 里，没有 `.h`/`.cpp` 分离——`import` 就是唯一的"#include"。
+                · C++ 工程常见 include/、src/、lib/ 分层；本工程 data/（数据）、ui/（界面）、logic 的拆分思路一致：**接口与实现、数据与表现解耦**。
+                · `object Curriculum` 单例 ≈ C++ 的静态类/命名空间级常量表：全局唯一、首次访问时才懒初始化（线程安全，无需手动加锁），用它做"课程注册表"正合适。
+                · `data class` 的一行定义 ≈ C++ 里手写 struct + 构造函数 + 比较运算符 + 拷贝的全部样板——编译器替你生成了 equals/hashCode/copy。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
@@ -855,11 +978,19 @@ object ComposeBasics {
             id = "compose-10",
             title = "下一步学习路线",
             concept = """
-                学到这里，你已能用 Compose 搭出完整的多页面 App：声明式思维、状态管理、列表、主题、导航。接下来怎么走？按"优先级从高到低"给出路线：
-                第一优先：副作用与协程——LaunchedEffect、rememberCoroutineScope，以及 Kotlin 协程（suspend、Flow）。界面要联网/读库时绕不开它们，Flow 之于协程 ≈ 观察者流的官方实现，值得系统学一遍。
-                第二优先：架构组件——ViewModel（配置变更后状态不丢、与 UI 分离）与 Repository 模式，再进阶到依赖注入（Hilt）。把本 App 的"数据层 + UI 层"重构为 ViewModel 驱动，是极佳的练手项目。
-                第三优先：性能与动画——derivedStateOf、remember 的 key、immutability 与 Stability；动画从 animate*AsState 入门，再学 AnimatedVisibility 与转场。
-                学习方法论：以项目驱动——给本 App 加功能（深色模式开关、搜索课程、错题本、用 DataStore 换掉内存进度存储），每加一个功能就把对应知识点学透；配合官方文档 compose.google.cn 与 Android Basics with Compose 课程。C++ 背景是你的优势：把"内存模型、生命周期、所有权"的严谨直觉迁移过来，你比纯新手少走一半弯路。
+                学到这里，你已能用 Compose 搭出完整的多页面 App：**声明式思维、状态管理、列表、主题、导航**。接下来按"优先级从高到低"给出路线。
+
+                ## 三个优先级
+
+                - **第一优先：副作用与协程**——`LaunchedEffect`、`rememberCoroutineScope`，以及 Kotlin 协程（`suspend`、`Flow`）；界面要**联网/读库**时绕不开它们，Flow 之于协程 ≈ 观察者流的官方实现，**值得系统学一遍**
+                - **第二优先：架构组件**——`ViewModel`（**配置变更后状态不丢**、与 UI 分离）与 Repository 模式，再进阶到依赖注入（Hilt）；把本 App 的"数据层 + UI 层"重构为 ViewModel 驱动，是**极佳的练手项目**
+                - **第三优先：性能与动画**——`derivedStateOf`、`remember` 的 key、immutability 与 Stability；动画从 `animate*AsState` 入门，再学 `AnimatedVisibility` 与转场
+
+                ## 学习方法论
+
+                - **以项目驱动**：给本 App 加功能（深色模式开关、搜索课程、错题本、用 DataStore 换掉内存进度存储），每加一个功能就把对应知识点学透
+                - 配合官方文档 compose.google.cn 与 Android Basics with Compose 课程
+                - C++ 背景是你的优势：把"**内存模型、生命周期、所有权**"的严谨直觉迁移过来，你比纯新手**少走一半弯路**
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -880,10 +1011,10 @@ object ComposeBasics {
                 ),
             ),
             cppComparison = """
-                · 协程 suspend ≈ 有栈/无栈协程：比 C++20 coroutine 的 co_await 机制封装得更"语言级"，写起来像同步代码。
-                · Flow ≈ ReactiveX / std::observable 流：冷流惰性求值，类似 C++ ranges 的 view——订阅才产生数据。
-                · ViewModel ≈ 拥有比"栈帧（屏幕）"更长生命周期的对象：类似把数据从函数局部提升到进程级智能指针托管，但框架定义了确切的作用域。
-                · 学路线图的忠告同 C++：不要试图一次学完整个生态——先让手上项目跑起来，再按需深挖，标准库哲学"先能用，再优化"在 Android 同样适用。
+                · 协程 `suspend` ≈ 有栈/无栈协程：比 C++20 coroutine 的 `co_await` 机制封装得更"语言级"，写起来像同步代码。
+                · `Flow` ≈ ReactiveX / `std::observable` 流：**冷流惰性求值**，类似 C++ ranges 的 view——订阅才产生数据。
+                · `ViewModel` ≈ 拥有比"栈帧（屏幕）"更长生命周期的对象：类似把数据从函数局部提升到进程级智能指针托管，但**框架定义了确切的作用域**。
+                · 学路线图的忠告同 C++：**不要试图一次学完整个生态**——先让手上项目跑起来，再按需深挖，标准库哲学"先能用，再优化"在 Android 同样适用。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
