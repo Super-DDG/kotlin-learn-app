@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import com.kotlin.learn.data.content.Curriculum
 import com.kotlin.learn.data.progress.ProgressStore
 import com.kotlin.learn.data.progress.UserProgress
+import com.kotlin.learn.ui.demos.AnimationDemo
 import com.kotlin.learn.ui.demos.CounterDemo
 import com.kotlin.learn.ui.demos.DemoCatalog
 import com.kotlin.learn.ui.demos.DemoListScreen
@@ -88,6 +89,7 @@ fun AppNav(progressStore: ProgressStore) {
             when (item?.id) {
                 "counter" -> CounterDemo(item!!, onBack, onLessonClick)
                 "todo" -> TodoDemo(item!!, onBack, onLessonClick)
+                "animation" -> AnimationDemo(item!!, onBack, onLessonClick)
                 else -> NotFoundScreen()
             }
         }
