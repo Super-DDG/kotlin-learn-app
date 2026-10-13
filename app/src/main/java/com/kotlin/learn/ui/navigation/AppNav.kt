@@ -10,6 +10,7 @@ import com.kotlin.learn.data.content.Curriculum
 import com.kotlin.learn.data.progress.ProgressStore
 import com.kotlin.learn.data.progress.UserProgress
 import com.kotlin.learn.ui.screens.HomeScreen
+import com.kotlin.learn.ui.screens.LessonListScreen
 import com.kotlin.learn.ui.screens.PlaceholderScreen
 
 object Routes {
@@ -33,8 +34,18 @@ fun AppNav(progressStore: ProgressStore) {
         }
         composable(Routes.MODULE) { backStackEntry ->
             val moduleId = backStackEntry.arguments?.getString("moduleId")
-            // 任务 10 替换为 LessonListScreen
-            PlaceholderScreen(text = "module: $moduleId")
+            val module = Curriculum.modules.firstOrNull { it.id == moduleId }
+            val progress by progressStore.progress.collectAsStateWithLifecycle(initialValue = UserProgress.EMPTY)
+            if (module == null) {
+                // TODO(任务 11): 替换为 NotFoundScreen()
+                PlaceholderScreen(text = "module 不存在：$moduleId")
+            } else {
+                LessonListScreen(
+                    module = module,
+                    progress = progress,
+                    onLessonClick = { lesson -> navController.navigate(Routes.lesson(lesson.id)) },
+                )
+            }
         }
         composable(Routes.LESSON) { backStackEntry ->
             val lessonId = backStackEntry.arguments?.getString("lessonId")
