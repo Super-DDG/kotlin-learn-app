@@ -53,10 +53,13 @@ fun PlaygroundScreen(
 ) {
     val context = LocalContext.current
     val connected = remember {
-        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = cm.activeNetwork
-        val caps = network?.let { cm.getNetworkCapabilities(it) }
-        caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+        // 防御性包裹：权限或 ROM 异常时按离线处理，不让检测本身崩溃
+        runCatching {
+            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val network = cm.activeNetwork
+            val caps = network?.let { cm.getNetworkCapabilities(it) }
+            caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+        }.getOrDefault(false)
     }
 
     Column(modifier = modifier.fillMaxSize()) {
