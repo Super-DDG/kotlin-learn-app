@@ -133,7 +133,7 @@ object ComposeBasics {
                 ),
             ),
             cppComparison = """
-                · @Composable 类似给函数打上"执行上下文"标记，和 C++20 的协程 [[coroutine]] 属性、C# 的 async 关键字同一思路：编译器据此改写调用约定。
+                · @Composable 类似给函数打上"执行上下文"标记，和 C++20 用 co_await/co_yield/co_return 关键字标记可挂起函数的思路、C# 的 async 关键字同一脉络：编译器据此改写调用约定。
                 · "只能被 Composable 调用"的检查在 C++ 里要靠 code review，在 Kotlin 里编译器直接报错——语言级约束更可靠。
                 · Composable 函数可能被调用 N 次、以任意顺序调用，不要假设"调用次数 = 界面刷新次数"，这和 C++ 里"函数调用一次执行一次"的直觉相反。
                 · UI 即函数调用树：Column { Text() } ≈ 构造一棵节点树，但节点对象由框架复用，你不持有引用。
@@ -192,7 +192,7 @@ object ComposeBasics {
                 Compose 没有预置的"几十种控件"，只有少量原子组件 + Modifier（修饰符）组合出一切。最常用的四件套：Text 显示文字；Button 触发点击（内容也是 Composable，所以按钮里能放图标+文字）；Column 纵向排列子项；Row 横向排列子项。
                 Modifier 是每个组件的"万能参数"：padding、fillMaxSize、background、clickable、weight……按链式顺序生效，顺序不同结果不同——.padding(8.dp).background(红) 和 .background(红).padding(8.dp) 画出来的大小不一样。
                 Column/Row 的子项可以用 weight(1f) 按"剩余空间的比例"分配，类似前端的 flex-grow；对齐方式用 verticalAlignment / horizontalAlignment 参数指定。
-                这些组件的默认样式来自 Material 3（下一模块详讲）：Button 自带圆角、涟漪反馈与主题色，你几乎不用自己画。
+                这些组件的默认样式来自 Material 3（见本模块第 7 课）：Button 自带圆角、涟漪反馈与主题色，你几乎不用自己画。
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -664,7 +664,7 @@ object ComposeBasics {
             id = "compose-08",
             title = "导航",
             concept = """
-                Compose 时代的页面跳转用官方库 androidx.compose.navigation:navigation-compose（当前稳定线 2.9.x）。核心三个角色：NavHost（承载页面的容器）、NavController（控制器，navigate/popBackStack 都由它发号施令）、以及一组"路由字符串 → Composable 屏幕"的映射。
+                Compose 时代的页面跳转用官方库 androidx.navigation:navigation-compose（当前稳定线 2.9.x）。核心三个角色：NavHost（承载页面的容器）、NavController（控制器，navigate/popBackStack 都由它发号施令）、以及一组"路由字符串 → Composable 屏幕"的映射。
                 最小骨架：rememberNavController() 创建控制器；NavHost(navController, startDestination = "home") 声明起始页；composable("route") { XxxScreen() } 注册路由；跳转用 navController.navigate("route")，返回用 navController.popBackStack() 或系统返回键。
                 传参用占位路由：composable("lesson/{lessonId}") { backStackEntry -> val id = backStackEntry.arguments?.getString("lessonId") }，跳转时 navigate("lesson/compose-01")。本 App 就是这么把课时 ID 从课程列表传到课程详情页的。
                 每个路由栈条目是一个独立 backStackEntry，其上的 rememberSaveable 状态自动保存——切页再返回，输入内容还在。复杂参数（对象）不要塞路由字符串，放到共享的 ViewModel 或轻量序列化即可。
