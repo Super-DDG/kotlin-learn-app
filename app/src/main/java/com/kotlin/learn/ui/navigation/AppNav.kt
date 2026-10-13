@@ -1,11 +1,15 @@
 package com.kotlin.learn.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.kotlin.learn.data.content.Curriculum
 import com.kotlin.learn.data.progress.ProgressStore
+import com.kotlin.learn.data.progress.UserProgress
+import com.kotlin.learn.ui.screens.HomeScreen
 import com.kotlin.learn.ui.screens.PlaceholderScreen
 
 object Routes {
@@ -20,9 +24,12 @@ object Routes {
 fun AppNav(progressStore: ProgressStore) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = Routes.HOME) {
-        composable(Routes.HOME) {
-            // 任务 9 替换为 HomeScreen(modules, progress, onModuleClick)
-            PlaceholderScreen(text = "home")
+        composable(Routes.HOME) { backStackEntry ->
+            val progress by progressStore.progress.collectAsStateWithLifecycle(initialValue = UserProgress.EMPTY)
+            HomeScreen(
+                progress = progress,
+                onModuleClick = { module -> navController.navigate(Routes.module(module.id)) },
+            )
         }
         composable(Routes.MODULE) { backStackEntry ->
             val moduleId = backStackEntry.arguments?.getString("moduleId")
