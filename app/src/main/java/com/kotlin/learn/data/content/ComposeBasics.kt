@@ -801,7 +801,7 @@ object ComposeBasics {
             cppComparison = """
                 · Kotlin 的 package 按目录分层，但不需要头文件：声明与实现都在 .kt 里，没有 .h/.cpp 分离——import 就是唯一的"#include"。
                 · C++ 工程常见 include/、src/、lib/ 分层；本工程 data/（数据）、ui/（界面）、logic 的拆分思路一致：接口与实现、数据与表现解耦。
-                · object Curriculum 单例 ≈ C++ 的静态类/命名空间级常量表：全局唯一、启动即初始化，用它做"课程注册表"正合适。
+                · object Curriculum 单例 ≈ C++ 的静态类/命名空间级常量表：全局唯一、首次访问时才懒初始化（线程安全，无需手动加锁），用它做"课程注册表"正合适。
                 · data class 的一行定义 ≈ C++ 里手写 struct + 构造函数 + 比较运算符 + 拷贝的全部样板——编译器替你生成了 equals/hashCode/copy。
             """.trimIndent(),
             questions = listOf(

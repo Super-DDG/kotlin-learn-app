@@ -123,7 +123,7 @@ object KotlinBasics {
                         "对数字做格式化对齐",
                     ),
                     correctIndex = 1,
-                    explanation = "${'$'}{...} 是模板表达式：先求值再嵌入结果。只嵌变量时可简写为 ${'$'}list.size。",
+                    explanation = "${'$'}{...} 是模板表达式：先求值再嵌入结果。只嵌单个变量时可简写为 ${'$'}list；取属性或表达式必须用花括号，如 ${'$'}{list.size}。",
                 ),
                 QuizQuestion(
                     question = "Kotlin 中 s1 == s2 对字符串比较的是？",
@@ -159,7 +159,7 @@ object KotlinBasics {
             id = "kotlin-03",
             title = "条件与循环",
             concept = """
-                `if` 和 `when` 都是表达式，可以有返回值：Kotlin 没有三元运算符 `?:`，直接写 `val max = if (a > b) a else b`。
+                `if` 和 `when` 都是表达式，可以有返回值：Kotlin 没有 `a ? b : c` 形式的三元运算符，直接写 `val max = if (a > b) a else b`。
                 `when` 替代 C++ 的 `switch`，但强大得多：可以匹配常量、区间、类型，分支之间不贯穿，不需要 `break`。
                 `for` 只有 `for (x in 序列)` 一种形式，靠 `in` 遍历区间、数组、集合；C 风格的三段式循环被区间表达式取代。
                 区间记法：`1..10` 是闭区间，`1 until 10` 是半开区间，`downTo` 倒序，`step` 设步长；需要复杂循环条件时再退回 `while`。
@@ -196,7 +196,7 @@ object KotlinBasics {
                 ),
             ),
             cppComparison = """
-                · `if`/`when` 都是表达式：Kotlin 刻意删掉了 `?:` 三元运算符，`if` 直接兼任。
+                · `if`/`when` 都是表达式：Kotlin 刻意删掉了 `a ? b : c` 形式的三元运算符，`if` 直接兼任。
                 · `when` 分支不贯穿、不用写 `break`；C++ 里忘写 break 的经典 bug 在 Kotlin 不存在。
                 · `for (i in 0 until n)` 对应 `for (int i = 0; i < n; i++)`；`..` 是闭区间，别按数学半开区间的习惯理解。
                 · 没有 C 风格三段式 `for(;;)`；条件复杂时用 `while`，遍历一律 `for-in`。
@@ -450,7 +450,7 @@ object KotlinBasics {
                 · 默认 final、显式 open：与 C++ 相反，Kotlin 的哲学是「默认不可扩展，开放才需声明」。
                 · `class Dog(name: String) : Animal(name)` 中括号里是在调用父类构造函数，对应 C++ 的初始化列表。
                 · override 是强制的：C++ 里 override 可写可不写，Kotlin 漏写直接编译错误。
-                · `val name` 一个主构造参数同时完成「成员声明 + 构造赋值 + getter」，没有 C++ 字段/generator 风格之争。
+                · `val name` 一个主构造参数同时完成「成员声明 + 构造赋值 + getter」，没有 C++ 字段/getter 风格之争。
             """.trimIndent(),
             questions = listOf(
                 QuizQuestion(
