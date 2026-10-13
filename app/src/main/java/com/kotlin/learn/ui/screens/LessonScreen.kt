@@ -20,17 +20,17 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.takeOrElse
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import com.kotlin.learn.data.markdown.MarkdownParser
 import com.kotlin.learn.data.model.Lesson
+import com.kotlin.learn.ui.render.HighlightedCode
+import com.kotlin.learn.ui.render.MarkdownText
 import com.kotlin.learn.ui.theme.CodeBg
 import com.kotlin.learn.ui.theme.CodeFg
 import com.kotlin.learn.ui.theme.IndigoOn
@@ -57,10 +57,9 @@ fun LessonScreen(
         Text(lesson.title, style = MaterialTheme.typography.headlineSmall)
         SectionCard(
             title = "📖 概念讲解",
-            body = lesson.concept,
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = IndigoOn,
-        )
+        ) { MarkdownText(MarkdownParser.parse(lesson.concept)) }
         lesson.codeExamples.forEach { example ->
             Card(
                 shape = RoundedCornerShape(12.dp),
@@ -86,10 +85,8 @@ fun LessonScreen(
                         color = CodeFg.copy(alpha = 0.7f),
                         modifier = Modifier.padding(top = 6.dp),
                     )
-                    Text(
-                        example.code,
-                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                        color = CodeFg,
+                    HighlightedCode(
+                        code = example.code,
                         modifier = Modifier.padding(top = 4.dp),
                     )
                 }
@@ -97,10 +94,9 @@ fun LessonScreen(
         }
         SectionCard(
             title = "🆚 给 C++ 开发者",
-            body = lesson.cppComparison,
             containerColor = WarmContainer,
             contentColor = WarmOn,
-        )
+        ) { MarkdownText(MarkdownParser.parse(lesson.cppComparison)) }
         QuizSection(questions = lesson.questions, onSubmit = onSubmitQuiz)
     }
 }
@@ -108,20 +104,14 @@ fun LessonScreen(
 @Composable
 private fun SectionCard(
     title: String,
-    body: String,
-    containerColor: Color = MaterialTheme.colorScheme.surfaceVariant,
-    contentColor: Color = Color.Unspecified,
+    containerColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.surfaceVariant,
+    contentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    content: @Composable () -> Unit,
 ) {
-    Card(
-        Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = containerColor,
-            contentColor = contentColor.takeOrElse { contentColorFor(containerColor) },
-        ),
-    ) {
+    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = containerColor, contentColor = contentColor)) {
         Column(Modifier.padding(12.dp)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
-            Text(body, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 6.dp))
+            Column(Modifier.padding(top = 6.dp)) { content() }
         }
     }
 }

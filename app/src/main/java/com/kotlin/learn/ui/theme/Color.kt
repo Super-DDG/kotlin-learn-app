@@ -19,3 +19,9 @@ val WarmOn = Color(0xFF6E4A1E)
 val CodeBg = Color(0xFF1E1E2E)          // 代码块深底
 val CodeFg = Color(0xFFD6D6F0)          // 代码块浅字
 val Success = Color(0xFF3DDC97)         // 完成徽章
+
+// 代码高亮（VS Code Dark+ 语义）
+val CodeKeyword = Color(0xFFC586C0)
+val CodeString = Color(0xFFCE9178)
+val CodeNumber = Color(0xFFB5CEA8)
+val CodeComment = Color(0xFF6A9955)
