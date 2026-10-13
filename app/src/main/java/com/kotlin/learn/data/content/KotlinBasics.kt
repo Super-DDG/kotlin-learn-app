@@ -531,9 +531,9 @@ object KotlinBasics {
 
                         val a: Animal = Dog("旺财")
                         println(a.speak())                            // 汪汪：动态绑定与虚函数一致
-                        println(a.introduce())                        // 我叫旺财
+                        println(a.introduce())                        // 我叫 旺财
                     """.trimIndent(),
-                    expectedOutput = "汪汪\n我叫旺财",
+                    expectedOutput = "汪汪\n我叫 旺财",
                 ),
             ),
             cppComparison = """
