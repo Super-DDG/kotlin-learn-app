@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,14 +25,20 @@ fun LessonListScreen(
     module: CourseModule,
     progress: UserProgress,
     onLessonClick: (Lesson) -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxSize()) {
-        Text(
-            text = "${module.emoji} ${module.title}",
-            style = MaterialTheme.typography.headlineSmall,
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(16.dp),
-        )
+        ) {
+            IconButton(onClick = onBack) { Text("←") }
+            Text(
+                text = "${module.emoji} ${module.title}",
+                style = MaterialTheme.typography.headlineSmall,
+            )
+        }
         HorizontalDivider()
         LazyColumn {
             itemsIndexed(module.lessons) { index, lesson ->
