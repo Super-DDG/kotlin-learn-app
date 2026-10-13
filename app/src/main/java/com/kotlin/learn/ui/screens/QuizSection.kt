@@ -1,5 +1,6 @@
 package com.kotlin.learn.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,9 +19,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.kotlin.learn.data.logic.QuizScorer
 import com.kotlin.learn.data.model.QuizQuestion
+import com.kotlin.learn.ui.theme.IndigoContainer
 
 @Composable
 fun QuizSection(
@@ -37,7 +40,10 @@ fun QuizSection(
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("✅ 随堂小测", style = MaterialTheme.typography.titleLarge)
         questions.forEachIndexed { qi, q ->
-            Card {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, IndigoContainer),
+            ) {
                 Column(Modifier.padding(12.dp)) {
                     Text("${qi + 1}. ${q.question}", style = MaterialTheme.typography.titleSmall)
                     q.options.forEachIndexed { oi, option ->
