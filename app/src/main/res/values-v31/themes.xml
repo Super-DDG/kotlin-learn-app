@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- 启动屏完全由系统接管（windowSplashScreen*），与运行时窗口背景零耦合；
+         首帧后系统自动淡出，页面背景回归主题默认（白） -->
     <style name="Theme.KotlinLearn" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">@drawable/splash_window_background</item>
         <item name="android:windowSplashScreenBackground">@color/brand_indigo</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
     </style>
