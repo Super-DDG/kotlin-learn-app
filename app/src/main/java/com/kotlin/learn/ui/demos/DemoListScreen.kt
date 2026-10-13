@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import com.kotlin.learn.data.content.Curriculum
 import com.kotlin.learn.ui.theme.Indigo
 
 @Composable
@@ -60,7 +61,7 @@ fun DemoListScreen(
                             modifier = Modifier.padding(top = 4.dp),
                         )
                         Text(
-                            text = demo.lessonIds.joinToString(" / ") { "compose 课" },
+                            text = demo.lessonIds.joinToString(" / ") { Curriculum.findLesson(it)?.title ?: it },
                             style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier.padding(top = 6.dp),
                         )

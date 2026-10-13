@@ -19,8 +19,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import com.kotlin.learn.ui.theme.Indigo
-import com.kotlin.learn.ui.theme.IndigoContainer
 import com.kotlin.learn.ui.theme.IndigoOn
 import com.kotlin.learn.ui.theme.Violet
 
