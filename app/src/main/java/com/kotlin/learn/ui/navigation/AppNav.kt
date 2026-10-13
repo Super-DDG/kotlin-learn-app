@@ -105,7 +105,7 @@ fun AppNav(progressStore: ProgressStore) {
                     lesson = lesson,
                     onBack = { navController.popBackStack() },
                     onSubmitQuiz = { correct, total ->
-                        scope.launch { progressStore.recordQuizResult(lessonId!!, correct, total) }
+                        scope.launch { progressStore.recordQuizResult(lesson.id, correct, total) }
                     },
                 )
             }

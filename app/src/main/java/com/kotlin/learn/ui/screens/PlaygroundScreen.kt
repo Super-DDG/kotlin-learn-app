@@ -85,6 +85,7 @@ fun PlaygroundScreen(
                         )
                     }
                 },
+                onRelease = { it.destroy() },
                 modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
             )
         } else {
