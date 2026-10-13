@@ -91,6 +91,7 @@ fun AppNav(progressStore: ProgressStore) {
                     lesson = lesson,
                     onQuizClick = { navController.navigate(Routes.quiz(lesson.id)) },
                     onPlaygroundClick = { index -> navController.navigate(Routes.playground(lesson.id, index)) },
+                    onDemoClick = { demoId -> navController.navigate(Routes.demo(demoId)) },
                 )
             }
         }

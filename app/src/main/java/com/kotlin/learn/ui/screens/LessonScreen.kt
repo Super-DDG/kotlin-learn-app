@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.kotlin.learn.data.markdown.MarkdownParser
 import com.kotlin.learn.data.model.Lesson
+import com.kotlin.learn.ui.demos.DemoCatalog
 import com.kotlin.learn.ui.render.HighlightedCode
 import com.kotlin.learn.ui.render.MarkdownText
 import com.kotlin.learn.ui.theme.CodeBg
@@ -46,6 +47,7 @@ fun LessonScreen(
     lesson: Lesson,
     onQuizClick: () -> Unit,
     onPlaygroundClick: (exampleIndex: Int) -> Unit,
+    onDemoClick: (demoId: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val appear = remember { Animatable(0f) }
@@ -117,6 +119,20 @@ fun LessonScreen(
             containerColor = WarmContainer,
             contentColor = WarmOn,
         ) { MarkdownText(MarkdownParser.parse(lesson.cppComparison)) }
+        val relatedDemos = DemoCatalog.items.filter { lesson.id in it.lessonIds }
+        relatedDemos.forEach { demo ->
+            Card(
+                onClick = { onDemoClick(demo.id) },
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    "🖥 去 Demo 乐园试玩：${demo.title}",
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(14.dp),
+                )
+            }
+        }
         Card(
             onClick = onQuizClick,
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
