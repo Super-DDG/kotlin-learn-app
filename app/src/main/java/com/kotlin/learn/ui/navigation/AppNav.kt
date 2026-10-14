@@ -28,6 +28,8 @@ import com.kotlin.learn.ui.screens.LessonListScreen
 import com.kotlin.learn.ui.screens.LessonScreen
 import com.kotlin.learn.ui.screens.NotFoundScreen
 import com.kotlin.learn.ui.screens.QuizScreen
+import com.kotlin.learn.ui.tools.CalculatorScreen
+import com.kotlin.learn.ui.tools.ConverterScreen
 import kotlinx.coroutines.launch
 
 object Routes {
@@ -125,6 +127,8 @@ fun AppNav(progressStore: ProgressStore) {
                 "scaffold" -> ScaffoldDemo(item!!, onBack, onLessonClick)
                 "login-form" -> LoginFormDemo(item!!, onBack, onLessonClick)
                 "controls" -> ControlsDemo(item!!, onBack, onLessonClick)
+                "calculator" -> CalculatorScreen()
+                "converter" -> ConverterScreen()
                 else -> NotFoundScreen()
             }
         }

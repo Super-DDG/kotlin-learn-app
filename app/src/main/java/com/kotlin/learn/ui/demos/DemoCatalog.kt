@@ -34,7 +34,7 @@ data class DemoItem(
     val explanation: String,
 )
 
-/** Demo 目录：共 7 个 demo（counter/todo/animation/dialogs/scaffold/login-form/controls）。 */
+/** Demo 目录：共 9 个 demo（counter/todo/animation/dialogs/scaffold/login-form/controls/calculator/converter）。 */
 object DemoCatalog {
     val items: List<DemoItem> = listOf(
         DemoItem(
@@ -63,6 +63,25 @@ object DemoCatalog {
             lessonIds = listOf("compose-03", "compose-07"),
             explanation = "animateFloatAsState / animateColorAsState 让你只声明\"目标值\"" +
                 "，中间的每一帧插值由库补齐。点一下盒子，目标值翻转，动画自动发生——没有手动计时器。",
+        ),
+        DemoItem(
+            id = "calculator",
+            title = "简易计算器",
+            emoji = "🧮",
+            description = "四则运算，逐步计算，真实可用",
+            lessonIds = listOf("compose-13"),
+            explanation = "计算器没有\"输入框\"：每个按键都是一次状态事件，" +
+                "display 是状态机的当前值。核心逻辑抽成了纯函数 CalculatorLogic，" +
+                "这正是\"UI 只是状态的一个函数\"的工程化写法。",
+        ),
+        DemoItem(
+            id = "converter",
+            title = "单位换算器",
+            emoji = "📏",
+            description = "长度/温度/重量，输入即换算",
+            lessonIds = listOf("compose-03"),
+            explanation = "输入一个数字，结果实时变化——因为换算结果每次重组时" +
+                "都由 ConverterLogic 从（数值, 源单位, 目标单位）三元组重新算出，没有中间存储。",
         ),
         DemoItem(
             id = "dialogs",
