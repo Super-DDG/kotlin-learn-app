@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -26,7 +28,11 @@ fun ConverterScreen(modifier: Modifier = Modifier) {
     var input by remember { mutableStateOf("1") }
     val value = input.toDoubleOrNull()
 
-    Column(modifier = modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    // 套 DemoPageShell 后内容槽高度受限（weight(1f)），长度/重量类别下结果行较多，加 verticalScroll 防溢出
+    Column(
+        modifier = modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ConverterLogic.Category.entries.forEach { c ->
                 FilterChip(

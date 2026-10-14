@@ -19,6 +19,7 @@ import com.kotlin.learn.ui.demos.ControlsDemo
 import com.kotlin.learn.ui.demos.CounterDemo
 import com.kotlin.learn.ui.demos.DialogDemo
 import com.kotlin.learn.ui.demos.DemoCatalog
+import com.kotlin.learn.ui.demos.DemoPageShell
 import com.kotlin.learn.ui.demos.DemoListScreen
 import com.kotlin.learn.ui.demos.LoginFormDemo
 import com.kotlin.learn.ui.demos.ScaffoldDemo
@@ -129,10 +130,10 @@ fun AppNav(progressStore: ProgressStore) {
                 "scaffold" -> ScaffoldDemo(item!!, onBack, onLessonClick)
                 "login-form" -> LoginFormDemo(item!!, onBack, onLessonClick)
                 "controls" -> ControlsDemo(item!!, onBack, onLessonClick)
-                "calculator" -> CalculatorScreen()
-                "converter" -> ConverterScreen()
-                "timer" -> TimerScreen()
-                "music" -> MusicPlayerScreen()
+                "calculator" -> DemoPageShell(item!!, onBack, onLessonClick, content = { CalculatorScreen() })
+                "converter" -> DemoPageShell(item!!, onBack, onLessonClick, content = { ConverterScreen() })
+                "timer" -> DemoPageShell(item!!, onBack, onLessonClick, content = { TimerScreen() })
+                "music" -> DemoPageShell(item!!, onBack, onLessonClick, content = { MusicPlayerScreen() })
                 else -> NotFoundScreen()
             }
         }

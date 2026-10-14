@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -30,7 +32,11 @@ import com.kotlin.learn.ui.theme.Violet
 fun CalculatorScreen(modifier: Modifier = Modifier) {
     var state by remember { mutableStateOf(CalculatorLogic.initial()) }
 
-    Column(modifier = modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    // 套 DemoPageShell 后内容槽高度受限（weight(1f)），加 verticalScroll 防按键网格溢出
+    Column(
+        modifier = modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
         Card(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = state.error ?: state.display,

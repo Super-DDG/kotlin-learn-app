@@ -78,6 +78,12 @@ class CalculatorLogicTest {
     }
 
     @Test
+    fun `结果后输新数再按 = 应用上一运算`() {
+        // 5+3=8 → 清空累加输入 9 → 按 = 应用上一运算符：9+3=12（而非 8+9）
+        assertEquals("12", onEquals(onDigit(onEquals(onOperator(type("5"), '+'), '3'), '9')).display)
+    }
+
+    @Test
     fun `小数点不重复`() {
         var s = onDigit(type("1"), '.')
         s = onDigit(s, '.')

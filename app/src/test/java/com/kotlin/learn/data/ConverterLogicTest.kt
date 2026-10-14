@@ -34,6 +34,7 @@ class ConverterLogicTest {
     fun `重量换算以克为基准`() {
         assertEquals(1.0, convertWeight(1000.0, WeightUnit.G, WeightUnit.KG), 1e-9)
         assertEquals(1000000.0, convertWeight(1.0, WeightUnit.T, WeightUnit.G), 1e-6)
+        assertEquals(-5000.0, convertWeight(-5.0, WeightUnit.KG, WeightUnit.G), 1e-9)
     }
 
     @Test
