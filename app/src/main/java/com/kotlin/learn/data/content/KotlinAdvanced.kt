@@ -614,8 +614,8 @@ object KotlinAdvanced {
                             }
                             println(config)                            // Config(host=127.0.0.1, port=8080)
 
-                            val list = mutableListOf(1, 2, 3).also {   // also：附加操作，返回接收者
-                                println("列表共 ${'$'}it 个元素")
+                            val list = mutableListOf(1, 2, 3).also {   // also：附加操作，it 是接收者本身
+                                println("列表共 ${'$'}{it.size} 个元素")
                             }
                             println(list)                              // [1, 2, 3]
                         }
