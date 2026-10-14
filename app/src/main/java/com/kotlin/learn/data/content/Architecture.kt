@@ -554,7 +554,7 @@ object Architecture {
                 ui/navigation   AppNav：把屏幕接成导航图
                      │
                 ui/screens      HomeScreen / LessonListScreen / LessonScreen / QuizScreen
-                ui/demos        8 个可交互 Compose Demo
+                ui/demos        7 个可交互 Compose Demo
                 ui/render       MarkdownText：markdown → Compose 渲染
                      │
                 data/content    课程数据（各模块的内容文件）
@@ -629,13 +629,14 @@ object Architecture {
                         // 本工程包之间的真实依赖（摘自各文件的 import 语句）
                         val dependsOn = mapOf(
                             "ui/navigation" to listOf("ui/screens", "ui/demos", "data/progress", "data/content"),
-                            "ui/screens" to listOf("ui/render", "ui/demos", "data/markdown", "data/model"),
+                            "ui/screens" to listOf("ui/render", "ui/demos", "data/content", "data/logic", "data/markdown", "data/model", "data/progress"),
                             "ui/demos" to listOf("data/content"),
                             "ui/render" to listOf("data/markdown"),
                             "data/content" to listOf("data/model"),
                             "data/progress" to listOf<String>(),
                             "data/logic" to listOf("data/model"),
                             "data/markdown" to listOf<String>(),
+                            "data/model" to listOf<String>(),
                         )
 
                         fun layer(pkg: String): Int = if (pkg.startsWith("ui/")) 2 else 1   // ui 在上，data 在下
@@ -648,7 +649,7 @@ object Architecture {
                             println("违反「只准向下依赖」的条目：${'$'}{if (violations.isEmpty()) "0 条" else violations.joinToString()}")
                         }
                     """.trimIndent(),
-                    expectedOutput = "检查 8 个包、12 条依赖\n违反「只准向下依赖」的条目：0 条",
+                    expectedOutput = "检查 9 个包、15 条依赖\n违反「只准向下依赖」的条目：0 条",
                 ),
             ),
             cppComparison = """
