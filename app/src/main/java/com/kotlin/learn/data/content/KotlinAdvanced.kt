@@ -768,24 +768,24 @@ object KotlinAdvanced {
                 QuizQuestion(
                     question = "Producer<out T> 中的 out 表示？",
                     options = listOf(
-                        "T 只出现在输出位置：Producer<String> 可以当作 Producer<Any> 使用",
                         "T 只出现在输入位置：Producer<Any> 可以当作 Producer<String> 使用",
+                        "T 只出现在输出位置：Producer<String> 可以当作 Producer<Any> 使用",
                         "Producer 不能再被继承",
                         "T 在运行时会被替换成 Any",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 1,
                     explanation = "out = 协变/生产者：只生产 T，String 是 Any 的子类型，因此 Producer<String> 也是 Producer<Any>。in（消费者）则方向相反。",
                 ),
                 QuizQuestion(
                     question = "List<*> 星投影的含义是？",
                     options = listOf(
-                        "元素类型未知的安全只读视图：能拿 size、把元素当 Any? 读，不能往里写",
                         "等价于 List<Any>，可以往里放任何类型",
                         "等价于 List<Int>，只是写法更短",
+                        "元素类型未知的安全只读视图：能拿 size、把元素当 Any? 读，不能往里写",
                         "表示空列表",
                     ),
-                    correctIndex = 0,
-                    explanation = "List<*> ≈ List<out Any?>：读出来当 Any? 用；因为不知道元素类型，除 null 外的写入都被编译器禁止。",
+                    correctIndex = 2,
+                    explanation = "List<*> ≈ List<out Any?>：读出来当 Any? 用；因为不知道元素类型，任何写入（包括 null）都被编译器禁止——Kotlin 星投影比 Java 通配符的「仅 null 可写」更严格。",
                 ),
                 QuizQuestion(
                     question = "reified 为什么必须配合 inline？",
@@ -801,12 +801,12 @@ object KotlinAdvanced {
                 QuizQuestion(
                     question = "C++ 模板与 Kotlin 泛型型变的对比，正确的是？",
                     options = listOf(
-                        "C++ 模板没有声明处型变，靠实例化点检查/SFINAE/concepts 约束；Kotlin 用 out/in 在声明处表达型变",
                         "C++ 的 vector<string> 可以直接赋给 vector<object>",
+                        "C++ 模板没有声明处型变，靠实例化点检查/SFINAE/concepts 约束；Kotlin 用 out/in 在声明处表达型变",
                         "C++ 模板运行时擦除类型，Kotlin 不擦除",
                         "两者完全等价，只是语法不同",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 1,
                     explanation = "C++ 模板按实例化逐份生成并检查（使用点检查）；Kotlin 一处声明，靠型变注解约束所有使用点（声明点声明）。方向正好相反。",
                 ),
             ),
@@ -895,12 +895,12 @@ object KotlinAdvanced {
                 QuizQuestion(
                     question = "「Flow 是冷流」意味着？",
                     options = listOf(
-                        "每次 collect 都重新执行 flow 构建块，收集者之间互不影响",
                         "Flow 创建时就自动开始发射，不管有没有收集者",
                         "多个收集者共享同一份发射序列",
+                        "每次 collect 都重新执行 flow 构建块，收集者之间互不影响",
                         "Flow 收集一次之后就再也不能收集",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 2,
                     explanation = "冷流 = 代码在收集时才执行，collect 是开关。要多个收集者共享一份热数据流，用 StateFlow/SharedFlow。",
                 ),
                 QuizQuestion(
@@ -917,23 +917,23 @@ object KotlinAdvanced {
                 QuizQuestion(
                     question = "combine 与 zip 的区别？",
                     options = listOf(
-                        "combine 任一方发射就用双方最新值组合发射；zip 严格按位置一对一配对，慢的一方拖住整体",
                         "没有区别，都是配对",
+                        "combine 任一方发射就用双方最新值组合发射；zip 严格按位置一对一配对，慢的一方拖住整体",
                         "combine 只取第一个值，zip 取所有值",
                         "zip 会丢弃慢流的所有数据",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 1,
                     explanation = "combine 的每方各自缓存最新值，随时再组合；zip 讲「第 n 个配第 n 个」。示例输出 1A/2A/2B 正是 combine 语义。",
                 ),
                 QuizQuestion(
                     question = "conflate 的适用场景是？",
                     options = listOf(
-                        "收集端处理太慢时，只保留最新值、跳过中间值——UI 刷新只关心最新帧",
                         "把两条流合并成一条",
                         "让发射端变快",
+                        "收集端处理太慢时，只保留最新值、跳过中间值——UI 刷新只关心最新帧",
                         "保证一个数据都不丢",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 2,
                     explanation = "conflate 是收集端的取舍：丢中间、保最新。要求零丢失的场景不能用，改用 buffer 缓冲或 zip 配对。",
                 ),
             ),
@@ -1012,23 +1012,23 @@ object KotlinAdvanced {
                 QuizQuestion(
                     question = "「非局部返回」指？",
                     options = listOf(
-                        "inline 函数的 lambda 参数里写 return，直接从调用它的外层函数返回",
                         "从多层循环里跳出",
+                        "inline 函数的 lambda 参数里写 return，直接从调用它的外层函数返回",
                         "函数的返回值类型是 Nothing",
                         "函数返回后局部变量仍然存活",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 1,
                     explanation = "内联把 lambda 体复制进调用点，return 就像写在调用者函数体里——forEachInline { if (...) return it } 直接从 firstNegative 返回。",
                 ),
                 QuizQuestion(
                     question = "普通（非 inline）高阶函数的 lambda 里写裸 return 会？",
                     options = listOf(
-                        "编译失败：lambda 不是调用者函数体的一部分，只能 return@标签 结束本次 lambda",
                         "直接从外层函数返回",
                         "运行时抛异常",
+                        "编译失败：lambda 不是调用者函数体的一部分，只能 return@标签 结束本次 lambda",
                         "被静默忽略",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 2,
                     explanation = "非 inline 的 lambda 是独立对象，裸 return 无处可去，编译器直接报错；return@process 只结束当次调用，循环继续。",
                 ),
                 QuizQuestion(
@@ -1149,12 +1149,12 @@ object KotlinAdvanced {
                 QuizQuestion(
                     question = "T.() -> Unit 与 (T) -> Unit 的区别是？",
                     options = listOf(
-                        "前者块内 this 是 T，成员可直接访问；后者块内用 it 指代 T",
                         "没有区别，只是写法不同",
                         "前者不能访问 T 的成员",
+                        "前者块内 this 是 T，成员可直接访问；后者块内用 it 指代 T",
                         "后者只能用于扩展函数",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 2,
                     explanation = "带接收者的函数类型让调用块像「在 T 内部写代码」——apply 和各类 DSL 都建立在这上面。",
                 ),
                 QuizQuestion(
@@ -1171,12 +1171,12 @@ object KotlinAdvanced {
                 QuizQuestion(
                     question = "DSL 嵌套块里写 p(\"...\") 时，this 指向？",
                     options = listOf(
-                        "最近一层的接收者（body 的 Node），所以 p 能被解析为该 Node 的扩展",
                         "最外层的 html",
+                        "最近一层的接收者（body 的 Node），所以 p 能被解析为该 Node 的扩展",
                         "main 函数",
                         "this 未定义，必须显式写出",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 1,
                     explanation = "每层 lambda with receiver 都有自己的隐式 this，内层遮蔽外层——这是 DSL 嵌套书写的原理，也是混淆的来源（@DslMarker 因此而生）。",
                 ),
                 QuizQuestion(
@@ -1287,19 +1287,19 @@ object KotlinAdvanced {
             questions = listOf(
                 QuizQuestion(
                     question = "operator fun plus(other) 让哪个语法可用？",
-                    options = listOf("a + b", "a == b", "a in b", "a[i]"),
-                    correctIndex = 0,
+                    options = listOf("a == b", "a + b", "a in b", "a[i]"),
+                    correctIndex = 1,
                     explanation = "plus 对应二元加号 a + b；== 对应 equals、in 对应 contains、a[i] 对应 get——运算符与函数名一一约定。",
                 ),
                 QuizQuestion(
                     question = "a[i]（下标访问）对应的运算符函数是？",
                     options = listOf(
-                        "operator fun get(index: Int)",
                         "operator fun indexOf",
                         "operator fun at",
+                        "operator fun get(index: Int)",
                         "operator fun bracket",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 2,
                     explanation = "get/set 成对：a[i] 调 get，a[i] = v 调 set(i, v)。",
                 ),
                 QuizQuestion(
@@ -1316,12 +1316,12 @@ object KotlinAdvanced {
                 QuizQuestion(
                     question = "\"A-1\" in store 展开后调用的是？",
                     options = listOf(
-                        "store.contains(\"A-1\")",
                         "store.get(\"A-1\")",
+                        "store.contains(\"A-1\")",
                         "store.invoke(\"A-1\")",
                         "store.plus(\"A-1\")",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 1,
                     explanation = "in 运算符约定到 contains；本课 TokenStore 实现了 operator contains，所以 `\"A-1\" in store` 可用。",
                 ),
             ),
@@ -1415,12 +1415,12 @@ object KotlinAdvanced {
                 QuizQuestion(
                     question = "sealed interface 相比 sealed class 的特点是？",
                     options = listOf(
-                        "接口不携带构造状态，子类实现更自由（数据类/枚举/object 都能实现）；sealed class 能有状态，但子类受单继承限制",
                         "sealed interface 允许模块外的类实现",
                         "sealed class 不能有 object 子类",
+                        "接口不携带构造状态，子类实现更自由（数据类/枚举/object 都能实现）；sealed class 能有状态，但子类受单继承限制",
                         "两者完全等价，没有区别",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 2,
                     explanation = "共同点是「子类型集合封闭在模块内」；差异在状态携带与继承约束。本课 SyncStatus 用枚举实现密封接口，正是 sealed class 做不到的写法。",
                 ),
                 QuizQuestion(
@@ -1437,23 +1437,23 @@ object KotlinAdvanced {
                 QuizQuestion(
                     question = "ReadOnlyProperty 与 ReadWriteProperty 的方法契约是？",
                     options = listOf(
-                        "ReadOnlyProperty 只有 getValue；ReadWriteProperty 多一个 setValue，对应 var 委托",
                         "ReadOnlyProperty 也要实现 setValue",
+                        "ReadOnlyProperty 只有 getValue；ReadWriteProperty 多一个 setValue，对应 var 委托",
                         "两者都必须实现 getValue/setValue/属性名三个方法",
                         "ReadWriteProperty 只能用于 val",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 1,
                     explanation = "val 用 ReadOnlyProperty（只读）；var 用 ReadWriteProperty（读 + 写）。本课 Observable 实现 ReadWriteProperty，所以 volume 可以是 var。",
                 ),
                 QuizQuestion(
                     question = "自定义 observable 委托与 adv-06 的 by lazy 分工是？",
                     options = listOf(
-                        "by lazy 管「首次读取才计算」（读取侧）；observable 管「每次写入时收到通知」（写入侧），二者互补",
                         "两者等价，可以互换",
                         "observable 也做缓存",
+                        "by lazy 管「首次读取才计算」（读取侧）；observable 管「每次写入时收到通知」（写入侧），二者互补",
                         "by lazy 每次赋值都会回调",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 2,
                     explanation = "adv-06 的 lazy 是读取侧惰性初始化；本课委托是写入侧监听（标准库 Delegates.observable 每次赋值都回调，即使值相同）。委托属性是同一机制的两个方向。",
                 ),
             ),
@@ -1534,23 +1534,23 @@ object KotlinAdvanced {
                 QuizQuestion(
                     question = "@Serializable 的序列化器由谁生成？",
                     options = listOf(
-                        "编译器插件在编译期为标注的类生成 serializer，运行时零反射",
                         "运行时反射读取注解动态生成",
+                        "编译器插件在编译期为标注的类生成 serializer，运行时零反射",
                         "需要手写 companion object",
                         "JVM 内置 JSON 支持",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 1,
                     explanation = "kotlinx.serialization 是编译器插件方案：编译期生成 User.serializer()，运行期无反射——这也是它适合被 R8/ProGuard 裁剪的 Android 的原因。",
                 ),
                 QuizQuestion(
                     question = "Json.encodeToString(User(\"Ann\", 20)) 的输出字段顺序是？",
                     options = listOf(
-                        "按主构造属性的声明顺序：{\"name\":\"Ann\",\"age\":20}",
                         "按字母序",
                         "随机顺序",
+                        "按主构造属性的声明顺序：{\"name\":\"Ann\",\"age\":20}",
                         "总是倒序",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 2,
                     explanation = "默认按声明顺序输出，字段名即属性名；需要改名时用 @SerialName。",
                 ),
                 QuizQuestion(
@@ -1567,12 +1567,12 @@ object KotlinAdvanced {
                 QuizQuestion(
                     question = "C++ 里对应 JSON 序列化的惯用做法是？",
                     options = listOf(
-                        "手写 operator<< / operator>>（或第三方库如 nlohmann/json），没有语言级序列化机制",
                         "标准库自带 @Serializable",
                         "用反射遍历成员自动生成",
+                        "手写 operator<< / operator>>（或第三方库如 nlohmann/json），没有语言级序列化机制",
                         "C++ 编译器自动生成 JSON 代码",
                     ),
-                    correctIndex = 0,
+                    correctIndex = 2,
                     explanation = "C++ 无反射：序列化要么手写流运算符，要么宏/模板/三方库生成。Kotlin 的编译器插件相当于「官方替你写好了 operator<</>>」。",
                 ),
             ),
