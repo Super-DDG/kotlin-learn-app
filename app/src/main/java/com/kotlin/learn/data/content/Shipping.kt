@@ -27,7 +27,9 @@ object Shipping {
 
                 - 无序广播（`sendBroadcast`）：所有接收者**并发**收到，互相不知道对方，也无法拦截
                 - 有序广播（`sendOrderedBroadcast`）：按 priority 从高到低**接力**，前者可 setResult 传结果给后者、可 abortBroadcast 截断
-                - 注册方式两种：运行时 `registerReceiver`（跟随 Context 生死）与 Manifest 静态声明——Android 8.0 起大部分隐式广播不再派发给静态接收者
+                - 注册方式两种：运行时 `registerReceiver` 与 Manifest 静态声明——Android 8.0 起大部分隐式广播不再派发给静态接收者
+                - targetSdk 34（Android 14）起，运行时注册必须显式声明 `RECEIVER_EXPORTED` / `RECEIVER_NOT_EXPORTED`：
+                  省略标志直接抛 SecurityException——自定义广播用 NOT_EXPORTED，只收自己应用的
 
                 ## 本课示例的说明
 
@@ -64,8 +66,12 @@ object Shipping {
                                 Toast.makeText(context, "收到：${'$'}{intent.action}", Toast.LENGTH_SHORT).show()
                             }
                         }
-                        // 运行时注册（Android 8.0 起隐式广播的推荐方式）：
-                        context.registerReceiver(receiver, IntentFilter("com.kotlin.learn.DOWNLOAD_DONE"))
+                        // 运行时注册（targetSdk 34 起必须显式声明导出标志，否则抛 SecurityException）：
+                        context.registerReceiver(
+                            receiver,
+                            IntentFilter("com.kotlin.learn.DOWNLOAD_DONE"),
+                            Context.RECEIVER_NOT_EXPORTED,   // 自定义广播只收本应用自己的，不给外部应用
+                        )
 
                         // 无序广播：所有匹配的接收者并发收到
                         context.sendBroadcast(Intent("com.kotlin.learn.DOWNLOAD_DONE"))
@@ -76,9 +82,11 @@ object Shipping {
                             null,
                         )
                     """.trimIndent(),
-                    expectedOutput = "（行为描述）注册后每次 sendBroadcast，接收器的 onReceive 都在主线程被回调并弹 Toast；" +
+                    expectedOutput = "（行为描述）以 RECEIVER_NOT_EXPORTED 注册后，每次 sendBroadcast，" +
+                        "接收器的 onReceive 都在主线程被回调并弹 Toast，外部应用发的同名广播收不到；" +
                         "换成 sendOrderedBroadcast 时，priority 最高的接收器先收到，可用 setResult 把数据传给下一个、" +
-                        "也可 abortBroadcast 让后面的接收器收不到。",
+                        "也可 abortBroadcast 让后面的接收器收不到。" +
+                        "若 targetSdk 34+ 注册时不声明导出标志，registerReceiver 当场抛 SecurityException。",
                 ),
             ),
             cppComparison = """
