@@ -70,6 +70,14 @@ class CalculatorLogicTest {
     }
 
     @Test
+    fun `等号前未输第二操作数后连按等号保持当前值`() {
+        var s = onEquals(onOperator(type("3"), '+'))   // 3 + = → 3（无可重复运算）
+        s = onEquals(s)                                // 3
+        s = onEquals(s)                                // 3
+        assertEquals("3", s.display)
+    }
+
+    @Test
     fun `小数点不重复`() {
         var s = onDigit(type("1"), '.')
         s = onDigit(s, '.')

@@ -82,22 +82,17 @@ object CalculatorLogic {
             s.pendingOp != null && s.enteringNumber -> {             // 常规：a op b
                 val b = s.display.toDouble()
                 val a = s.accumulator ?: 0.0
-                compute(s, a, s.pendingOp, b)
+                compute(a, s.pendingOp, b)
             }
-            s.pendingOp != null && s.accumulator != null -> {        // = 前未输第二操作数：结果为当前显示值（5 + = → 5）
-                s.copy(
-                    pendingOp = null,
-                    accumulator = null,
-                    enteringNumber = false,
-                )
-            }
+            s.pendingOp != null && s.accumulator != null ->         // = 前未输第二操作数：结果为当前显示值（5 + = → 5）
+                State(display = s.display)                           // 不保留可重复运算，连 = 保持当前值
             s.lastOp != null && s.lastOperand != null ->             // 连续 =：重复上一运算
-                compute(s.copy(accumulator = s.display.toDouble()), s.display.toDouble(), s.lastOp, s.lastOperand)
+                compute(s.display.toDouble(), s.lastOp, s.lastOperand)
             else -> s
         }
     }
 
-    private fun compute(s: State, a: Double, op: Char, b: Double): State {
+    private fun compute(a: Double, op: Char, b: Double): State {
         if (op == '÷' && b == 0.0) {
             return State(error = "除数不能为 0")
         }
