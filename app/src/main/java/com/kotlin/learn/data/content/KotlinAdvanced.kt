@@ -509,7 +509,7 @@ object KotlinAdvanced {
                                 delay(100L)
                                 throw ArithmeticException("根协程未处理异常")
                             }
-                            delay(500L)                          // 给子协程时间触发异常
+                            delay(500L)                          // 给根协程时间触发异常
                             println("main 正常结束")
                         }
                     """.trimIndent(),
@@ -595,28 +595,30 @@ object KotlinAdvanced {
                     code = """
                         data class Config(var host: String = "", var port: Int = 0)
 
-                        val name: String? = "Kotlin"
+                        fun main() {
+                            val name: String? = "Kotlin"
 
-                        val length = name?.let { it.length }       // let：仅非空时执行，返回 lambda 结果
-                        println(length)                            // 6
+                            val length = name?.let { it.length }       // let：仅非空时执行，返回 lambda 结果
+                            println(length)                            // 6
 
-                        val area = run {                           // run：块内组织计算，返回块结果
-                            val a = 3
-                            val b = 4
-                            a * b
+                            val area = run {                           // run：块内组织计算，返回块结果
+                                val a = 3
+                                val b = 4
+                                a * b
+                            }
+                            println(area)                              // 12
+
+                            val config = Config().apply {              // apply：块内 this 是接收者
+                                host = "127.0.0.1"                     // 省略 this. 直接配置
+                                port = 8080
+                            }
+                            println(config)                            // Config(host=127.0.0.1, port=8080)
+
+                            val list = mutableListOf(1, 2, 3).also {   // also：附加操作，返回接收者
+                                println("列表共 ${'$'}it 个元素")
+                            }
+                            println(list)                              // [1, 2, 3]
                         }
-                        println(area)                              // 12
-
-                        val config = Config().apply {              // apply：块内 this 是接收者
-                            host = "127.0.0.1"                     // 省略 this. 直接配置
-                            port = 8080
-                        }
-                        println(config)                            // Config(host=127.0.0.1, port=8080)
-
-                        val list = mutableListOf(1, 2, 3).also {   // also：附加操作，返回接收者
-                            println("列表共 ${'$'}it 个元素")
-                        }
-                        println(list)                              // [1, 2, 3]
                     """.trimIndent(),
                     expectedOutput = "6\n12\nConfig(host=127.0.0.1, port=8080)\n列表共 3 个元素\n[1, 2, 3]",
                 ),
