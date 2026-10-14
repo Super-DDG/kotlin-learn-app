@@ -8,11 +8,16 @@ import org.junit.Test
 
 class CurriculumContentTest {
     @Test
-    fun `全课程共 3 模块 40 课`() {
-        assertEquals(3, Curriculum.modules.size)
-        assertEquals(40, Curriculum.modules.sumOf { it.lessons.size })
-        assertEquals(listOf("kotlin-basics", "android-core", "compose-basics"),
-            Curriculum.modules.map { it.id })
+    fun `全课程共 7 模块 63 课`() {
+        assertEquals(7, Curriculum.modules.size)
+        assertEquals(63, Curriculum.modules.sumOf { it.lessons.size })
+        assertEquals(
+            listOf(
+                "kotlin-basics", "android-core", "compose-basics",
+                "kotlin-advanced", "data-network", "architecture", "shipping",
+            ),
+            Curriculum.modules.map { it.id },
+        )
     }
 
     @Test

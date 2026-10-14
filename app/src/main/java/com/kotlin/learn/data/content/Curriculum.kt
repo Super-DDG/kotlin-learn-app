@@ -9,6 +9,10 @@ object Curriculum {
         KotlinBasics.moduleOf(KotlinBasics.lessons),
         AndroidCore.moduleOf(AndroidCore.lessons),
         ComposeBasics.moduleOf(ComposeBasics.lessons),
+        KotlinAdvanced.moduleOf(KotlinAdvanced.lessons),
+        DataNetwork.moduleOf(DataNetwork.lessons),
+        Architecture.moduleOf(Architecture.lessons),
+        Shipping.moduleOf(Shipping.lessons),
     )
 
     /** 按课时 ID 查找课程；找不到返回 null（由 UI 显示兜底页）。 */
