@@ -30,6 +30,8 @@ import com.kotlin.learn.ui.screens.NotFoundScreen
 import com.kotlin.learn.ui.screens.QuizScreen
 import com.kotlin.learn.ui.tools.CalculatorScreen
 import com.kotlin.learn.ui.tools.ConverterScreen
+import com.kotlin.learn.ui.tools.MusicPlayerScreen
+import com.kotlin.learn.ui.tools.TimerScreen
 import kotlinx.coroutines.launch
 
 object Routes {
@@ -129,6 +131,8 @@ fun AppNav(progressStore: ProgressStore) {
                 "controls" -> ControlsDemo(item!!, onBack, onLessonClick)
                 "calculator" -> CalculatorScreen()
                 "converter" -> ConverterScreen()
+                "timer" -> TimerScreen()
+                "music" -> MusicPlayerScreen()
                 else -> NotFoundScreen()
             }
         }

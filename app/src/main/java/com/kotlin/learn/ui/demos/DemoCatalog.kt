@@ -34,7 +34,7 @@ data class DemoItem(
     val explanation: String,
 )
 
-/** Demo 目录：共 9 个 demo（counter/todo/animation/dialogs/scaffold/login-form/controls/calculator/converter）。 */
+/** Demo 目录：共 11 个 demo（counter/todo/animation/dialogs/scaffold/login-form/controls/calculator/converter/timer/music）。 */
 object DemoCatalog {
     val items: List<DemoItem> = listOf(
         DemoItem(
@@ -82,6 +82,24 @@ object DemoCatalog {
             lessonIds = listOf("compose-03"),
             explanation = "输入一个数字，结果实时变化——因为换算结果每次重组时" +
                 "都由 ConverterLogic 从（数值, 源单位, 目标单位）三元组重新算出，没有中间存储。",
+        ),
+        DemoItem(
+            id = "timer",
+            title = "倒计时器",
+            emoji = "⏱",
+            description = "分秒设定、暂停续走，协程驱动",
+            lessonIds = listOf("adv-02", "adv-04"),
+            explanation = "倒数不是定时器轮询：每剩 1 秒由 LaunchedEffect + delay(1000) 挂起等待，" +
+                "暂停只是取消该协程、继续是重启——adv-02/04 学的挂起语义在这里真实工作。",
+        ),
+        DemoItem(
+            id = "music",
+            title = "音乐播放器",
+            emoji = "🎵",
+            description = "MediaPlayer 播放内置旋律，进度可拖",
+            lessonIds = listOf("compose-04"),
+            explanation = "播放/暂停是状态，进度条是状态的投影；离开页面时" +
+                "DisposableEffect 释放 MediaPlayer——compose-01/03 学的生命周期语义在真实资源上的应用。",
         ),
         DemoItem(
             id = "dialogs",
