@@ -8,8 +8,8 @@ import org.junit.Test
 
 class KotlinAdvancedContentTest {
     @Test
-    fun `模块四有 6 课且 ID 连续`() {
-        assertEquals(6, KotlinAdvanced.lessons.size)
+    fun `模块四有 13 课且 ID 连续`() {
+        assertEquals(13, KotlinAdvanced.lessons.size)
         KotlinAdvanced.lessons.forEachIndexed { i, lesson ->
             assertEquals("adv-%02d".format(i + 1), lesson.id)
         }

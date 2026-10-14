@@ -5,7 +5,7 @@ import com.kotlin.learn.data.model.CourseModule
 import com.kotlin.learn.data.model.Lesson
 import com.kotlin.learn.data.model.QuizQuestion
 
-/** 模块四：Kotlin 进阶（6 课），协程为主。 */
+/** 模块四：Kotlin 进阶（13 课）：协程、作用域函数与委托、泛型/Flow/inline/DSL/运算符重载/密封接口与自定义委托/序列化。 */
 object KotlinAdvanced {
     val lessons: List<Lesson> = listOf(
         Lesson(
@@ -689,6 +689,891 @@ object KotlinAdvanced {
                     ),
                     correctIndex = 0,
                     explanation = "?. 短路掉 null，let 保证块内的 it 一定是非空 String——空检查与使用一步到位，等价于一段 if 判空守卫。",
+                ),
+            ),
+        ),
+        Lesson(
+            id = "adv-07",
+            title = "泛型与型变",
+            concept = """
+                泛型让「一套逻辑服务多种类型」。这一课的重点不是语法，而是**型变**——泛型之间「谁是谁的子类型」的规则。
+
+                ## 基本语法与擦除
+
+                - `fun <T> f(x: T)`：泛型函数；`class Box<T>(val v: T)`：泛型类
+                - JVM 泛型**运行时擦除**：`List<Int>` 和 `List<String>` 运行时都只是 `List`
+
+                ## out 与 in：型变
+
+                - `out T`（生产者）：T 只出现在**输出**位置 → `Producer<String>` 可以当 `Producer<Any>` 用（协变）
+                - `in T`（消费者）：T 只出现在**输入**位置 → 超类型可代入（逆变）
+                - 记法 **PECS**：Producer out，Consumer in
+
+                ## 星投影 List<*>
+
+                元素类型未知时的安全只读视图：能 `size`、能遍历（元素当 `Any?` 读），不能往里写。
+
+                ## reified：把类型贴回运行时
+
+                擦除让 `value is T` 在普通泛型函数里不可能——`inline fun <reified T>` 把函数体复制进调用点，T 被替换成实际类型，`is T`、`T::class` 全部可行。注意边界：`List<Int>` 的实参 `Int` 仍被擦除，reified 只能看到 `List`。
+            """.trimIndent(),
+            codeExamples = listOf(
+                CodeExample(
+                    description = "out 型变与星投影：生产者可以被更大的类型引用",
+                    code = """
+                        // out：生产者——只往外输出 T，Producer<String> 可以当 Producer<Any> 用
+                        interface Producer<out T> {
+                            fun produce(): T
+                        }
+
+                        class GreetingProducer : Producer<String> {
+                            override fun produce() = "你好"
+                        }
+
+                        // 星投影：不知道也不关心元素类型时用 List<*>
+                        fun describe(list: List<*>): String = "共 ${'$'}{list.size} 个元素"
+
+                        fun main() {
+                            val p: Producer<Any> = GreetingProducer()   // String 是 Any 的子类型 → 型变允许
+                            println(p.produce())
+                            println(describe(listOf(1, "二", 3.0)))
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "你好\n共 3 个元素",
+                ),
+                CodeExample(
+                    description = "reified：inline 让 T 在运行时可见",
+                    code = """
+                        // reified 必须配 inline：内联后 T 被替换成实际类型，运行时才看得见
+                        inline fun <reified T> checkType(value: Any): Boolean = value is T
+
+                        inline fun <reified T> describe(): String = "T 在运行时是 ${'$'}{T::class.simpleName}"
+
+                        fun main() {
+                            println(checkType<String>("你好"))
+                            println(checkType<Int>("你好"))
+                            println(describe<List<Int>>())      // 注意：List<Int> 也只能看到 List（擦除的边界）
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "true\nfalse\nT 在运行时是 List",
+                ),
+            ),
+            cppComparison = """
+                · C++ 模板没有声明处型变：`vector<string>` 不能赋给 `vector<object>`，约束靠实例化点检查、SFINAE 或 C++20 concepts；Kotlin 用 out/in 在**声明处**一次性表达，所有使用点自动获得协变/逆变规则。
+                · Kotlin 泛型运行时擦除（JVM），reified + inline 是把类型信息「贴回调用点」的官方手段；C++ 模板是编译期按类型逐份实例化，类型信息反而过全，代价是代码膨胀。
+                · `List<*>` ≈ 「不知道 T 的 List」：类似装 void* 的容器，但保留类型安全的只读视图。
+                · `value is T` 在 C++ 里对应 typeid 比较——那是运行时 RTTI；Kotlin 靠内联把类型判断在编译期定型。
+            """.trimIndent(),
+            questions = listOf(
+                QuizQuestion(
+                    question = "Producer<out T> 中的 out 表示？",
+                    options = listOf(
+                        "T 只出现在输出位置：Producer<String> 可以当作 Producer<Any> 使用",
+                        "T 只出现在输入位置：Producer<Any> 可以当作 Producer<String> 使用",
+                        "Producer 不能再被继承",
+                        "T 在运行时会被替换成 Any",
+                    ),
+                    correctIndex = 0,
+                    explanation = "out = 协变/生产者：只生产 T，String 是 Any 的子类型，因此 Producer<String> 也是 Producer<Any>。in（消费者）则方向相反。",
+                ),
+                QuizQuestion(
+                    question = "List<*> 星投影的含义是？",
+                    options = listOf(
+                        "元素类型未知的安全只读视图：能拿 size、把元素当 Any? 读，不能往里写",
+                        "等价于 List<Any>，可以往里放任何类型",
+                        "等价于 List<Int>，只是写法更短",
+                        "表示空列表",
+                    ),
+                    correctIndex = 0,
+                    explanation = "List<*> ≈ List<out Any?>：读出来当 Any? 用；因为不知道元素类型，除 null 外的写入都被编译器禁止。",
+                ),
+                QuizQuestion(
+                    question = "reified 为什么必须配合 inline？",
+                    options = listOf(
+                        "JVM 泛型在运行时被擦除；inline 把函数体复制进调用点，T 被替换成实际类型，is T / T::class 才可行",
+                        "reified 是 inline 的别名，只是写法不同",
+                        "不内联的话 reified 函数运行太慢",
+                        "inline 让函数变成 public",
+                    ),
+                    correctIndex = 0,
+                    explanation = "擦除使普通泛型函数运行时看不到 T；内联后调用点直接持有实参类型，类型判断才能落地。注意 List<Int> 的实参也被擦成 List——reified 看不到内层类型。",
+                ),
+                QuizQuestion(
+                    question = "C++ 模板与 Kotlin 泛型型变的对比，正确的是？",
+                    options = listOf(
+                        "C++ 模板没有声明处型变，靠实例化点检查/SFINAE/concepts 约束；Kotlin 用 out/in 在声明处表达型变",
+                        "C++ 的 vector<string> 可以直接赋给 vector<object>",
+                        "C++ 模板运行时擦除类型，Kotlin 不擦除",
+                        "两者完全等价，只是语法不同",
+                    ),
+                    correctIndex = 0,
+                    explanation = "C++ 模板按实例化逐份生成并检查（使用点检查）；Kotlin 一处声明，靠型变注解约束所有使用点（声明点声明）。方向正好相反。",
+                ),
+            ),
+        ),
+        Lesson(
+            id = "adv-08",
+            title = "Flow 进阶：冷热与组合",
+            concept = """
+                Flow 是协程世界的**异步数据流**：一串按时间陆续到达的值。这一课讲清冷热之分与组合算子。
+
+                ## 冷流：collect 是开关
+
+                - `flow { }` 构建块只在**收集时**执行；每次 collect 各自完整跑一遍
+                - 两个收集者互不影响，像两份独立的订阅
+
+                ## 热流：MutableStateFlow
+
+                - 独立于收集者存在：随时读写 `value`，有没有人收集都一样
+                - 新收集者一上来**立刻拿到最新值**——UI 状态容器的标准语义
+                - SharedFlow 同为热流，但不保存状态，适合「事件广播」而不是「状态保存」
+
+                ## 组合算子
+
+                - `combine`：任一方发射，就用**双方最新值**组合出一条新数据（两方各自缓存最新）
+                - `zip`：严格按位置一对一配对，慢的一方拖住整体
+                - `conflate`：收集太慢时只保留最新值，跳过中间值——UI 只关心最新帧
+            """.trimIndent(),
+            codeExamples = listOf(
+                CodeExample(
+                    description = "冷流每次收集重新执行；StateFlow 热流随时可读（真实运行）",
+                    code = """
+                        import kotlinx.coroutines.*
+                        import kotlinx.coroutines.flow.*
+
+                        // 冷流：flow { } 构建块只在收集时执行，每次收集都重新执行
+                        fun coldCounter(): Flow<Int> = flow {
+                            println("（构建块开始执行）")
+                            emit(1)
+                            emit(2)
+                        }
+
+                        fun main() = runBlocking {
+                            println("冷流·第一次收集")
+                            coldCounter().collect { println("收到 ${'$'}it") }
+                            println("冷流·第二次收集——构建块重新执行")
+                            coldCounter().collect { println("收到 ${'$'}it") }
+
+                            val hot = MutableStateFlow(0)          // 热流：不依赖收集者，随时可读
+                            hot.value = 42
+                            val latest = hot.first()               // 新收集者立刻拿到最新值
+                            println("热流·没收集过它，latest = ${'$'}latest")
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "冷流·第一次收集\n（构建块开始执行）\n收到 1\n收到 2\n冷流·第二次收集——构建块重新执行\n（构建块开始执行）\n收到 1\n收到 2\n热流·没收集过它，latest = 42",
+                ),
+                CodeExample(
+                    description = "combine：任一方发射就用双方最新值组合（真实运行）",
+                    code = """
+                        import kotlinx.coroutines.*
+                        import kotlinx.coroutines.flow.*
+
+                        fun main() = runBlocking {
+                            val numbers = flow {
+                                delay(100L); emit(1)
+                                delay(100L); emit(2)
+                            }
+                            val letters = flow {
+                                delay(150L); emit("A")
+                                delay(150L); emit("B")
+                            }
+                            // combine：任一方发射，就用「双方的最新值」组合出一条新数据
+                            numbers.combine(letters) { n, l -> "${'$'}n${'$'}l" }
+                                .collect { println("combine 发射：${'$'}it") }
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "combine 发射：1A\ncombine 发射：2A\ncombine 发射：2B",
+                ),
+            ),
+            cppComparison = """
+                · Flow 冷流 ≈ 惰性生产者：collect 才执行，类似 C++ range 适配器被遍历时才计算；StateFlow/SharedFlow 热流 ≈ 观察者模式里的被观察主体，广播最新状态。
+                · combine ≈ Qt 信号槽把两路信号汇成一路：任一路更新就触发；zip ≈ 严格成对消费的双队列。
+                · conflate ≈ 「只保留最新一帧」：类似双缓冲渲染丢弃中间帧，UI 场景的标准取舍。
+                · Room DAO 返回 Flow<List<T>>，表一变自动重发射——C++ 里数据库回调要手动接线和保活，Flow 把订阅生命周期交给协程作用域管理。
+            """.trimIndent(),
+            questions = listOf(
+                QuizQuestion(
+                    question = "「Flow 是冷流」意味着？",
+                    options = listOf(
+                        "每次 collect 都重新执行 flow 构建块，收集者之间互不影响",
+                        "Flow 创建时就自动开始发射，不管有没有收集者",
+                        "多个收集者共享同一份发射序列",
+                        "Flow 收集一次之后就再也不能收集",
+                    ),
+                    correctIndex = 0,
+                    explanation = "冷流 = 代码在收集时才执行，collect 是开关。要多个收集者共享一份热数据流，用 StateFlow/SharedFlow。",
+                ),
+                QuizQuestion(
+                    question = "MutableStateFlow「热」体现在？",
+                    options = listOf(
+                        "它独立于收集者存在：随时可读写当前值，新收集者一上来立刻拿到最新值",
+                        "它运行在更快的线程上",
+                        "它的发射速度比普通 Flow 快",
+                        "它必须先有收集者才能赋值",
+                    ),
+                    correctIndex = 0,
+                    explanation = "StateFlow 持有状态：赋值不依赖任何收集者，collect 只是订阅状态变化——这正是 UI 状态容器的语义。",
+                ),
+                QuizQuestion(
+                    question = "combine 与 zip 的区别？",
+                    options = listOf(
+                        "combine 任一方发射就用双方最新值组合发射；zip 严格按位置一对一配对，慢的一方拖住整体",
+                        "没有区别，都是配对",
+                        "combine 只取第一个值，zip 取所有值",
+                        "zip 会丢弃慢流的所有数据",
+                    ),
+                    correctIndex = 0,
+                    explanation = "combine 的每方各自缓存最新值，随时再组合；zip 讲「第 n 个配第 n 个」。示例输出 1A/2A/2B 正是 combine 语义。",
+                ),
+                QuizQuestion(
+                    question = "conflate 的适用场景是？",
+                    options = listOf(
+                        "收集端处理太慢时，只保留最新值、跳过中间值——UI 刷新只关心最新帧",
+                        "把两条流合并成一条",
+                        "让发射端变快",
+                        "保证一个数据都不丢",
+                    ),
+                    correctIndex = 0,
+                    explanation = "conflate 是收集端的取舍：丢中间、保最新。要求零丢失的场景不能用，改用 buffer 缓冲或 zip 配对。",
+                ),
+            ),
+        ),
+        Lesson(
+            id = "adv-09",
+            title = "inline 与非局部返回",
+            concept = """
+                inline 不只是性能优化——它改变了 lambda 的**返回语义**。
+
+                ## 内联是什么
+
+                `inline fun` 把函数体和 lambda 体一起复制进调用点：没有闭包对象、没有函数调用开销。`let`/`apply` 等作用域函数都是 inline 的。
+
+                ## 非局部返回
+
+                lambda 体被复制进调用者函数体后，里面的 `return` 就像写在调用者里——**直接从外层函数返回**：
+
+                - 普通（非 inline）高阶函数的 lambda 里写裸 `return` 是**编译错**
+                - 只能 `return@函数名` 结束本次 lambda，循环继续
+
+                ## 两个修饰符
+
+                - `noinline`：让某个 lambda 参数保持对象身份（可存储、可转递）
+                - `crossinline`：lambda 将被放进另一个执行上下文（如另起线程）调用时，仍内联但禁止非局部返回
+            """.trimIndent(),
+            codeExamples = listOf(
+                CodeExample(
+                    description = "inline lambda 里的 return 直接返回外层函数（真实运行）",
+                    code = """
+                        inline fun forEachInline(nums: List<Int>, action: (Int) -> Unit) {
+                            for (n in nums) action(n)
+                        }
+
+                        fun firstNegative(nums: List<Int>): Int? {
+                            forEachInline(nums) {
+                                if (it < 0) return it          // 非局部返回：直接从 firstNegative 返回
+                            }
+                            return null
+                        }
+
+                        fun main() {
+                            println("第一个负数：${'$'}{firstNegative(listOf(3, 1, -5, 8))}")
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "第一个负数：-5",
+                ),
+                CodeExample(
+                    description = "普通高阶函数：裸 return 是编译错，只能 return@标签 结束本次 lambda（真实运行）",
+                    code = """
+                        fun process(nums: List<Int>, action: (Int) -> Unit) {
+                            for (n in nums) action(n)
+                        }
+
+                        fun main() {
+                            process(listOf(1, -2, 3)) {
+                                if (it < 0) {
+                                    println("遇到负数 ${'$'}it：结束本次 lambda，而不是 main")
+                                    return@process
+                                }
+                                println("处理 ${'$'}it")
+                            }
+                            println("main 继续执行到最后一行")
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "处理 1\n遇到负数 -2：结束本次 lambda，而不是 main\n处理 3\nmain 继续执行到最后一行",
+                ),
+            ),
+            cppComparison = """
+                · 非局部返回是 Kotlin 独有语义：C++ lambda 里 return 只退出 lambda 本身，无法从调用者函数返回——除非把返回值带出去再判断，inline 让 Kotlin 免去这道手续。
+                · inline 高阶函数 ≈ C++ 模板/宏展开：函数体进调用点，没有闭包对象分配；Kotlin 编译器自动完成，普通函数仍保持对象语义。
+                · noinline ≈ 显式要求「这个参数保持 std::function 对象身份」：需要存储或转递时使用。
+                · crossinline 对应「lambda 将被放进其他执行上下文执行」的契约：仍内联，但放弃非局部返回。
+            """.trimIndent(),
+            questions = listOf(
+                QuizQuestion(
+                    question = "「非局部返回」指？",
+                    options = listOf(
+                        "inline 函数的 lambda 参数里写 return，直接从调用它的外层函数返回",
+                        "从多层循环里跳出",
+                        "函数的返回值类型是 Nothing",
+                        "函数返回后局部变量仍然存活",
+                    ),
+                    correctIndex = 0,
+                    explanation = "内联把 lambda 体复制进调用点，return 就像写在调用者函数体里——forEachInline { if (...) return it } 直接从 firstNegative 返回。",
+                ),
+                QuizQuestion(
+                    question = "普通（非 inline）高阶函数的 lambda 里写裸 return 会？",
+                    options = listOf(
+                        "编译失败：lambda 不是调用者函数体的一部分，只能 return@标签 结束本次 lambda",
+                        "直接从外层函数返回",
+                        "运行时抛异常",
+                        "被静默忽略",
+                    ),
+                    correctIndex = 0,
+                    explanation = "非 inline 的 lambda 是独立对象，裸 return 无处可去，编译器直接报错；return@process 只结束当次调用，循环继续。",
+                ),
+                QuizQuestion(
+                    question = "noinline 的用途是？",
+                    options = listOf(
+                        "让某个 lambda 参数不内联，保留为真实对象，可存进变量或传给非 inline 函数",
+                        "禁止函数被调用",
+                        "让函数不参与编译器优化",
+                        "把 inline 函数整体变回普通函数",
+                    ),
+                    correctIndex = 0,
+                    explanation = "inline 参数的 lambda 没有对象身份，不能当对象存储；需要存储或转递时，用 noinline 单独标注该参数。",
+                ),
+                QuizQuestion(
+                    question = "crossinline 解决什么问题？",
+                    options = listOf(
+                        "内联的 lambda 会被放到另一个执行上下文（如另起线程）里调用时，禁止非局部返回但仍内联",
+                        "让 lambda 跨线程共享数据",
+                        "交叉编译多平台目标",
+                        "强制 lambda 返回 Unit",
+                    ),
+                    correctIndex = 0,
+                    explanation = "若内联 lambda 被包进另一个对象异步执行，非局部 return 就不成立了——crossinline 声明「不许 return，但仍内联」。",
+                ),
+            ),
+        ),
+        Lesson(
+            id = "adv-10",
+            title = "lambda with receiver 与 DSL",
+            concept = """
+                DSL（领域特定语言）的底层只有一个构件：**带接收者的函数类型**。
+
+                ## T.() -> Unit
+
+                - 普通 `(T) -> Unit`：块内用 `it` 指代 T
+                - 带接收者 `T.() -> Unit`：块内 `this` 就是 T——成员直接访问，像「在 T 内部写代码」
+
+                ## apply 的原理
+
+                `T.apply(block: T.() -> Unit): T` = 用带接收者类型执行 block，然后返回接收者本身。本课手写一个 `myApply` 验证：作用域函数没有任何魔法（与 adv-06 的 apply 用法衔接）。
+
+                ## DSL 怎么长出来
+
+                - 顶层入口函数接收 `Root.() -> Unit`
+                - 每层接收者上定义扩展函数作为「子结构」
+                - 嵌套块里 `this` 指向**最近一层**接收者
+
+                ## @DslMarker：防作用域泄漏
+
+                嵌套时外层接收者的成员在内层也能直接调，容易写错还不报错。用 `@DslMarker` 标注的注解标记接收者类型后，编译器禁止在内层直接访问外层接收者的成员。
+            """.trimIndent(),
+            codeExamples = listOf(
+                CodeExample(
+                    description = "手写迷你 html DSL：lambda with receiver 的真实运行",
+                    code = """
+                        class Node(val name: String) {
+                            val children = mutableListOf<Node>()
+                            var text = ""
+
+                            fun render(): String {
+                                val inner = text + children.joinToString("") { it.render() }
+                                return "<${'$'}name>${'$'}inner</${'$'}name>"
+                            }
+                        }
+
+                        // 带接收者的函数类型 Node.() -> Unit：块内 this 是 Node
+                        fun html(block: Node.() -> Unit): String = Node("html").apply(block).render()
+
+                        fun Node.body(block: Node.() -> Unit) {
+                            children += Node("body").apply(block)
+                        }
+
+                        fun Node.p(text: String) {
+                            children += Node("p").apply { this.text = text }
+                        }
+
+                        fun main() {
+                            val page = html {
+                                body {
+                                    p("你好，DSL")
+                                    p("this 指向最近的接收者")
+                                }
+                            }
+                            println(page)
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "<html><body><p>你好，DSL</p><p>this 指向最近的接收者</p></body></html>",
+                ),
+                CodeExample(
+                    description = "手写 myApply：apply 的全部原理（真实运行）",
+                    code = """
+                        // apply 的原理：带接收者的函数类型 + 返回接收者本身
+                        fun <T> T.myApply(block: T.() -> Unit): T {
+                            this.block()
+                            return this
+                        }
+
+                        data class Server(var host: String = "", var port: Int = 0)
+
+                        fun main() {
+                            val s = Server().myApply {
+                                host = "10.0.0.1"          // this 是 Server，可直接访问成员
+                                port = 9090
+                            }
+                            println(s)
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "Server(host=10.0.0.1, port=9090)",
+                ),
+            ),
+            cppComparison = """
+                · 带接收者的函数类型 `Node.() -> Unit` ≈ C++ 成员函数指针 + 绑定对象的组合：块内 this 自动指向接收者，无需显式传参。
+                · apply 的原理就是一个普通函数，C++ 可用「返回 *this 的链式配置」模仿；但 DSL 嵌套（块内再嵌块）没有对应物——C++ 要手写 builder 对象层层命名。
+                · @DslMarker ≈ 编译期的「作用域隔离」：C++ 没有对应机制，靠命名约定和 code review 防止嵌套 builder 的 this 混用。
+                · `html { body { p("...") } }` 与手写字符串拼接相比：结构由类型保证——本例标签由 render 自动闭合，漏写结构是编译错误而不是运行时的坏 HTML。
+            """.trimIndent(),
+            questions = listOf(
+                QuizQuestion(
+                    question = "T.() -> Unit 与 (T) -> Unit 的区别是？",
+                    options = listOf(
+                        "前者块内 this 是 T，成员可直接访问；后者块内用 it 指代 T",
+                        "没有区别，只是写法不同",
+                        "前者不能访问 T 的成员",
+                        "后者只能用于扩展函数",
+                    ),
+                    correctIndex = 0,
+                    explanation = "带接收者的函数类型让调用块像「在 T 内部写代码」——apply 和各类 DSL 都建立在这上面。",
+                ),
+                QuizQuestion(
+                    question = "apply 的原理可以用一句话概括为？",
+                    options = listOf(
+                        "T.apply(block: T.() -> Unit): T —— 用带接收者类型执行 block，然后返回接收者本身",
+                        "T.apply(block: (T) -> Unit): T —— 用 it 执行 block，返回 block 的结果",
+                        "T.apply(block: T.() -> Unit): Unit",
+                        "apply 是编译器魔法，无法手写等价物",
+                    ),
+                    correctIndex = 0,
+                    explanation = "本课手写的 myApply 与 apply 行为一致：this.block() 执行配置块，return this 交回对象。作用域函数没有任何魔法。",
+                ),
+                QuizQuestion(
+                    question = "DSL 嵌套块里写 p(\"...\") 时，this 指向？",
+                    options = listOf(
+                        "最近一层的接收者（body 的 Node），所以 p 能被解析为该 Node 的扩展",
+                        "最外层的 html",
+                        "main 函数",
+                        "this 未定义，必须显式写出",
+                    ),
+                    correctIndex = 0,
+                    explanation = "每层 lambda with receiver 都有自己的隐式 this，内层遮蔽外层——这是 DSL 嵌套书写的原理，也是混淆的来源（@DslMarker 因此而生）。",
+                ),
+                QuizQuestion(
+                    question = "@DslMarker 的作用是？",
+                    options = listOf(
+                        "标注注解类后，被它标记的接收者在外层接收者的 lambda 中不可直接访问，防止作用域泄漏",
+                        "让 DSL 运行更快",
+                        "自动生成 DSL 文档",
+                        "禁止在 DSL 里调用标准库",
+                    ),
+                    correctIndex = 0,
+                    explanation = "没有它，html {} 里能直接调到外层接收者的所有成员，嵌套写错也不报错；@DslMarker 把这类错误变成编译错误。",
+                ),
+            ),
+        ),
+        Lesson(
+            id = "adv-11",
+            title = "运算符重载与中缀函数",
+            concept = """
+                运算符不是特权：`+`、`[]`、`in` 都对应一个**约定命名的函数**，实现了就能用。
+
+                ## 常用运算符约定
+
+                - `a + b` → `operator fun plus(other)`
+                - `a * k` → `operator fun times(k)`
+                - `-a` → `operator fun unaryMinus()`
+                - `a[i]` → `operator fun get(i)`；`a[i] = v` → `set(i, v)`
+                - `"x" in s` → `operator fun contains(x)`
+                - `a..b` → `operator fun rangeTo(b)`
+                - `obj(...)` → `operator fun invoke(...)`
+
+                ## 规矩
+
+                - 函数标 `operator` 关键字，**名字必须匹配约定**——不能给 `+` 绑一个叫 add 的函数
+                - 扩展函数也能定义运算符：可以给**第三方类**补运算符
+
+                ## 中缀函数 infix
+
+                单参数的成员/扩展函数标 `infix`，调用时省点号和括号：`2 pow 10`。标准库的 `1 to 2`（构造 Pair）就是 infix 扩展。它不是运算符——没有符号，只是更自然的读法。
+            """.trimIndent(),
+            codeExamples = listOf(
+                CodeExample(
+                    description = "向量类：plus/times/unaryMinus/get 全部真实运行",
+                    code = """
+                        data class Vector2(val x: Int, val y: Int) {
+                            operator fun plus(other: Vector2) = Vector2(x + other.x, y + other.y)
+                            operator fun times(k: Int) = Vector2(x * k, y * k)
+                            operator fun unaryMinus() = Vector2(-x, -y)
+                            operator fun get(i: Int) =
+                                if (i == 0) x else if (i == 1) y else throw IndexOutOfBoundsException("只支持 0/1")
+
+                            override fun toString() = "(${'$'}x, ${'$'}y)"
+                        }
+
+                        fun main() {
+                            val a = Vector2(1, 2)
+                            val b = Vector2(3, 4)
+                            println("a + b = ${'$'}{a + b}")
+                            println("a * 3 = ${'$'}{a * 3}")
+                            println("-a    = ${'$'}{-a}")
+                            println("a[0] = ${'$'}{a[0]}, a[1] = ${'$'}{a[1]}")
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "a + b = (4, 6)\na * 3 = (3, 6)\n-a    = (-1, -2)\na[0] = 1, a[1] = 2",
+                ),
+                CodeExample(
+                    description = "contains/invoke/infix：三个约定的真实运行",
+                    code = """
+                        class TokenStore(private val tokens: MutableSet<String> = mutableSetOf()) {
+                            operator fun contains(token: String) = token in tokens   // 让 "x" in store 可用
+                            fun grant(token: String) { tokens += token }
+                            override fun toString() = "已授权 ${'$'}{tokens.size} 个"
+                        }
+
+                        class TokenIssuer {
+                            operator fun invoke(user: String) = "token-${'$'}user"   // 实例当函数调用
+                        }
+
+                        // 中缀函数：单参数扩展函数，调用时省点号和括号
+                        infix fun Int.pow(n: Int): Int {
+                            var result = 1
+                            repeat(n) { result *= this }
+                            return result
+                        }
+
+                        fun main() {
+                            val store = TokenStore()
+                            store.grant("A-1")
+                            println("A-1" in store)
+                            println("B-2" in store)
+                            println(store)
+
+                            val issue = TokenIssuer()
+                            println(issue("Ann"))
+
+                            println("2 pow 10 = ${'$'}{2 pow 10}")
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "true\nfalse\n已授权 1 个\ntoken-Ann\n2 pow 10 = 1024",
+                ),
+            ),
+            cppComparison = """
+                · operator plus/get ≈ C++ 的 operator+/operator[]：同名机制；Kotlin 还能用**扩展函数**给第三方类补运算符，C++ 只能改类内或写全局 operator（且要求至少一个类类型参数）。
+                · 中缀函数 `2 pow 10` 在 C++ 没有对应物：想要「读起来像运算符」，只能真重载运算符或写成普通函数调用。
+                · invoke 让实例像函数一样调用 ≈ C++ 的 operator()（仿函数）：语义一致，Kotlin 还能把 invoke 定义成扩展。
+                · contains 之于 `in` ≈ C++ 的 std::find / set::count 惯用法：成员判断在 Kotlin 有统一语法入口。
+            """.trimIndent(),
+            questions = listOf(
+                QuizQuestion(
+                    question = "operator fun plus(other) 让哪个语法可用？",
+                    options = listOf("a + b", "a == b", "a in b", "a[i]"),
+                    correctIndex = 0,
+                    explanation = "plus 对应二元加号 a + b；== 对应 equals、in 对应 contains、a[i] 对应 get——运算符与函数名一一约定。",
+                ),
+                QuizQuestion(
+                    question = "a[i]（下标访问）对应的运算符函数是？",
+                    options = listOf(
+                        "operator fun get(index: Int)",
+                        "operator fun indexOf",
+                        "operator fun at",
+                        "operator fun bracket",
+                    ),
+                    correctIndex = 0,
+                    explanation = "get/set 成对：a[i] 调 get，a[i] = v 调 set(i, v)。",
+                ),
+                QuizQuestion(
+                    question = "自定义 infix 函数的条件是？",
+                    options = listOf(
+                        "只有一个参数的成员函数或扩展函数，调用时省点号和括号",
+                        "任何函数加 infix 关键字都行",
+                        "只能给 Int 类型定义",
+                        "必须同时标注 operator",
+                    ),
+                    correctIndex = 0,
+                    explanation = "infix 要求单参数的成员/扩展函数；标准库的 1 to 2 就是 infix 扩展。运算符则用 operator + 约定名。",
+                ),
+                QuizQuestion(
+                    question = "\"A-1\" in store 展开后调用的是？",
+                    options = listOf(
+                        "store.contains(\"A-1\")",
+                        "store.get(\"A-1\")",
+                        "store.invoke(\"A-1\")",
+                        "store.plus(\"A-1\")",
+                    ),
+                    correctIndex = 0,
+                    explanation = "in 运算符约定到 contains；本课 TokenStore 实现了 operator contains，所以 `\"A-1\" in store` 可用。",
+                ),
+            ),
+        ),
+        Lesson(
+            id = "adv-12",
+            title = "密封接口与自定义委托",
+            concept = """
+                ## 密封接口 sealed interface
+
+                与 sealed class 一样：**子类型集合封闭**（同模块内声明），when 可以穷尽检查。差异：
+
+                - 接口**不携带构造状态**，子类实现更自由
+                - **枚举类也能实现**密封接口——sealed class 做不到（枚举已经继承了 Enum）
+                - 每个子类型可以是 data class（带数据）、object（单例）或 enum（固定取值集合）
+
+                ## 自定义委托
+
+                `by` 背后是一个普通对象（adv-06 的 by lazy 是「读取侧」委托）：
+
+                - `ReadOnlyProperty`：实现 `getValue`，服务 `val`
+                - `ReadWriteProperty`：再加 `setValue`，服务 `var`
+                - `Delegates.observable(initial) { old, new -> ... }`：每次赋值都回调（即使值相同）——本课手写一个等价物
+            """.trimIndent(),
+            codeExamples = listOf(
+                CodeExample(
+                    description = "密封接口：数据类/object/枚举三类子类型，when 穷尽检查（真实运行）",
+                    code = """
+                        sealed interface UiState
+                        data class Loading(val attempt: Int) : UiState
+                        data class Ready(val items: List<String>) : UiState
+                        object Error : UiState
+
+                        enum class SyncStatus : UiState { IDLE, SYNCING, DONE }   // 枚举类也能实现密封接口
+
+                        // when 穷尽所有子类型：不用 else，漏写分支直接编译失败
+                        fun label(state: UiState): String = when (state) {
+                            is Loading -> "加载中（第 ${'$'}{state.attempt} 次）"
+                            is Ready -> "就绪：${'$'}{state.items.size} 条"
+                            Error -> "出错了"
+                            is SyncStatus -> "同步状态：${'$'}state"
+                        }
+
+                        fun main() {
+                            println(label(Loading(2)))
+                            println(label(Ready(listOf("A", "B"))))
+                            println(label(Error))
+                            println(label(SyncStatus.SYNCING))
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "加载中（第 2 次）\n就绪：2 条\n出错了\n同步状态：SYNCING",
+                ),
+                CodeExample(
+                    description = "手写 observable 委托：ReadWriteProperty 的真实运行",
+                    code = """
+                        import kotlin.properties.ReadWriteProperty
+                        import kotlin.reflect.KProperty
+
+                        // 等价于 Delegates.observable：每次赋值都回调（即使值相同）
+                        class Observable<T>(
+                            initial: T,
+                            private val onChange: (old: T, new: T) -> Unit,
+                        ) : ReadWriteProperty<Any?, T> {
+                            private var value = initial
+                            override fun getValue(thisRef: Any?, property: KProperty<*>): T = value
+                            override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+                                val old = this.value
+                                this.value = value
+                                onChange(old, value)
+                            }
+                        }
+
+                        fun main() {
+                            var volume by Observable(30) { old, new -> println("音量 ${'$'}old → ${'$'}new") }
+                            volume = 50
+                            volume = 50
+                            volume = 10
+                            println("当前音量：${'$'}volume")
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "音量 30 → 50\n音量 50 → 50\n音量 50 → 10\n当前音量：10",
+                ),
+            ),
+            cppComparison = """
+                · sealed interface ≈ C++ 的 std::variant + visitor：封闭类型集合 + 穷尽处理；variant 漏分支靠编译警告或库层断言，Kotlin 的 when 穷尽性是硬性编译错误。
+                · 枚举类实现密封接口：C++ 枚举不能继承接口，只能往 variant 里塞枚举再写转换层；Kotlin 一行声明。
+                · 自定义委托（ReadWriteProperty）≈ C++ 没有属性语法，getter/setter 手写或宏生成；Kotlin 把「存取拦截」抽象成可复用对象，一处实现处处 by。
+                · Delegates.observable ≈ 手写 setter 里发通知（观察者模式样板）；Kotlin 一行 by 声明，拦截逻辑可复用。
+            """.trimIndent(),
+            questions = listOf(
+                QuizQuestion(
+                    question = "sealed interface 相比 sealed class 的特点是？",
+                    options = listOf(
+                        "接口不携带构造状态，子类实现更自由（数据类/枚举/object 都能实现）；sealed class 能有状态，但子类受单继承限制",
+                        "sealed interface 允许模块外的类实现",
+                        "sealed class 不能有 object 子类",
+                        "两者完全等价，没有区别",
+                    ),
+                    correctIndex = 0,
+                    explanation = "共同点是「子类型集合封闭在模块内」；差异在状态携带与继承约束。本课 SyncStatus 用枚举实现密封接口，正是 sealed class 做不到的写法。",
+                ),
+                QuizQuestion(
+                    question = "密封类型（interface/class）最大的收益是？",
+                    options = listOf(
+                        "when 穷尽性检查：所有分支覆盖后可省 else，新增子类型时漏写直接编译失败",
+                        "运行速度更快",
+                        "自动生成 toString",
+                        "子类可以放在任何文件",
+                    ),
+                    correctIndex = 0,
+                    explanation = "编译器知道全部子类型，分支覆盖即可编译通过；加一种新状态，所有相关 when 立刻编译报错提醒补齐——状态机的安全网。",
+                ),
+                QuizQuestion(
+                    question = "ReadOnlyProperty 与 ReadWriteProperty 的方法契约是？",
+                    options = listOf(
+                        "ReadOnlyProperty 只有 getValue；ReadWriteProperty 多一个 setValue，对应 var 委托",
+                        "ReadOnlyProperty 也要实现 setValue",
+                        "两者都必须实现 getValue/setValue/属性名三个方法",
+                        "ReadWriteProperty 只能用于 val",
+                    ),
+                    correctIndex = 0,
+                    explanation = "val 用 ReadOnlyProperty（只读）；var 用 ReadWriteProperty（读 + 写）。本课 Observable 实现 ReadWriteProperty，所以 volume 可以是 var。",
+                ),
+                QuizQuestion(
+                    question = "自定义 observable 委托与 adv-06 的 by lazy 分工是？",
+                    options = listOf(
+                        "by lazy 管「首次读取才计算」（读取侧）；observable 管「每次写入时收到通知」（写入侧），二者互补",
+                        "两者等价，可以互换",
+                        "observable 也做缓存",
+                        "by lazy 每次赋值都会回调",
+                    ),
+                    correctIndex = 0,
+                    explanation = "adv-06 的 lazy 是读取侧惰性初始化；本课委托是写入侧监听（标准库 Delegates.observable 每次赋值都回调，即使值相同）。委托属性是同一机制的两个方向。",
+                ),
+            ),
+        ),
+        Lesson(
+            id = "adv-13",
+            title = "序列化",
+            concept = """
+                ## kotlinx.serialization：编译器插件方案
+
+                - `@Serializable` 标注数据类，**编译器插件**在编译期生成 `User.serializer()`——运行时零反射
+                - `Json.encodeToString(user)`：对象 → JSON，字段按**声明顺序**输出，字段名即属性名（`@SerialName` 可改名）
+                - `Json.decodeFromString<User>(json)`：JSON → 对象；缺无默认值的必填字段直接抛异常
+                - 因为没有反射，R8/ProGuard 裁剪后依然可用——Android 网络层的主流搭配
+
+                ## 与手写 toString/parse 对照
+
+                手写 `toJson()/fromJson()` 与 C++ 手写 `operator<<`/`operator>>` 同病：每个类一份样板，字段增减要同步多处，还容易「缺了就静默给默认值」。序列化器直接对接构造函数，字段完整性在解析时强制校验。
+
+                （本课示例 1 为概念示意——工程未引入该依赖；示例 2 用纯 Kotlin 复现「序列化 ↔ 反序列化」语义，真实可跑。）
+            """.trimIndent(),
+            codeExamples = listOf(
+                CodeExample(
+                    description = "kotlinx.serialization 的标准写法（概念示意，非真实运行输出）",
+                    code = """
+                        // 示意：展示 kotlinx.serialization 的写法与含义（需引入编译器插件与依赖才能真实编译）
+                        import kotlinx.serialization.Serializable
+                        import kotlinx.serialization.json.Json
+
+                        @Serializable                       // 编译器插件据此生成 User.serializer()
+                        data class User(val name: String, val age: Int)
+
+                        fun main() {
+                            val json = Json.encodeToString(User("Ann", 20))   // 序列化：对象 → JSON 字符串
+                            println(json)
+                            val back = Json.decodeFromString<User>(json)      // 反序列化：JSON → 对象
+                            println(back)
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "（示意）{\"name\":\"Ann\",\"age\":20}\nUser(name=Ann, age=20)",
+                ),
+                CodeExample(
+                    description = "纯 Kotlin 复现「序列化 ↔ 反序列化」语义：这就是库替你生成的代码（真实运行）",
+                    code = """
+                        data class User(val name: String, val age: Int) {
+                            fun toJson(): String = "{\"name\":\"${'$'}name\",\"age\":${'$'}age}"
+
+                            companion object {
+                                fun fromJson(json: String): User {
+                                    val body = json.removePrefix("{").removeSuffix("}")
+                                    val fields = body.split(",").associate { pair ->
+                                        val parts = pair.split(":", limit = 2)
+                                        parts[0].trim().removePrefix("\"").removeSuffix("\"") to
+                                            parts[1].trim().removePrefix("\"").removeSuffix("\"")
+                                    }
+                                    return User(fields["name"] ?: "", (fields["age"] ?: "0").toInt())
+                                }
+                            }
+                        }
+
+                        fun main() {
+                            val user = User("Ann", 20)
+                            val json = user.toJson()
+                            println(json)
+                            println(User.fromJson(json))
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "{\"name\":\"Ann\",\"age\":20}\nUser(name=Ann, age=20)",
+                ),
+            ),
+            cppComparison = """
+                · 手写 toJson/fromJson ≈ C++ 手写 operator<< / operator>>：每个类一份样板，字段增减要同步两处；@Serializable 由编译器插件生成，永远与类定义同步。
+                · C++ 没有反射，序列化靠宏/模板元编程或三方库（nlohmann/json、cereal）；kotlinx.serialization 是「官方编译器插件」路线，运行时零反射，对 R8/ProGuard 裁剪友好。
+                · 缺字段即抛错：编译期生成的序列化器直接对接构造函数——C++ 手写 parse 常见的「缺了就默认值静默继续」在这里被构造校验拒绝。
+                · Android 实战：Retrofit + kotlinx.serialization（或 Moshi）转换器，网络层进出自动完成 JSON ↔ data class。
+            """.trimIndent(),
+            questions = listOf(
+                QuizQuestion(
+                    question = "@Serializable 的序列化器由谁生成？",
+                    options = listOf(
+                        "编译器插件在编译期为标注的类生成 serializer，运行时零反射",
+                        "运行时反射读取注解动态生成",
+                        "需要手写 companion object",
+                        "JVM 内置 JSON 支持",
+                    ),
+                    correctIndex = 0,
+                    explanation = "kotlinx.serialization 是编译器插件方案：编译期生成 User.serializer()，运行期无反射——这也是它适合被 R8/ProGuard 裁剪的 Android 的原因。",
+                ),
+                QuizQuestion(
+                    question = "Json.encodeToString(User(\"Ann\", 20)) 的输出字段顺序是？",
+                    options = listOf(
+                        "按主构造属性的声明顺序：{\"name\":\"Ann\",\"age\":20}",
+                        "按字母序",
+                        "随机顺序",
+                        "总是倒序",
+                    ),
+                    correctIndex = 0,
+                    explanation = "默认按声明顺序输出，字段名即属性名；需要改名时用 @SerialName。",
+                ),
+                QuizQuestion(
+                    question = "反序列化时 JSON 缺少无默认值的必填字段会？",
+                    options = listOf(
+                        "抛出序列化异常：编译期生成的序列化器按构造函数校验字段完整性",
+                        "返回 null 对象",
+                        "自动补 0/空串继续",
+                        "静默忽略该字段",
+                    ),
+                    correctIndex = 0,
+                    explanation = "序列化器直接对接构造函数，缺字段就构造不出来——比手写解析「缺了就给默认值」更早暴露问题。",
+                ),
+                QuizQuestion(
+                    question = "C++ 里对应 JSON 序列化的惯用做法是？",
+                    options = listOf(
+                        "手写 operator<< / operator>>（或第三方库如 nlohmann/json），没有语言级序列化机制",
+                        "标准库自带 @Serializable",
+                        "用反射遍历成员自动生成",
+                        "C++ 编译器自动生成 JSON 代码",
+                    ),
+                    correctIndex = 0,
+                    explanation = "C++ 无反射：序列化要么手写流运算符，要么宏/模板/三方库生成。Kotlin 的编译器插件相当于「官方替你写好了 operator<</>>」。",
                 ),
             ),
         ),
