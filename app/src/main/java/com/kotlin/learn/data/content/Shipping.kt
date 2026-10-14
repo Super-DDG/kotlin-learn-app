@@ -146,7 +146,7 @@ object Shipping {
                         "继续在 Manifest 里静态声明（对所有广播仍然有效）",
                         "运行时 registerReceiver 动态注册",
                         "新建一个空 Activity 等广播",
-                        "静态声明加 export=true 就一定能收到",
+                        "静态声明加 exported=true 就一定能收到",
                     ),
                     correctIndex = 1,
                     explanation = "Android 8.0 起大部分隐式广播不再派发给 Manifest 静态接收者（少数例外）；运行时 registerReceiver 不受这条限制。",
@@ -177,7 +177,7 @@ object Shipping {
                 ## 本 App 的真实测试长什么样
 
                 - `QuizScorerTest`：判分逻辑——全对、部分对、未作答、全未答四个场景
-                - `ProgressLogicTest`：进度逻辑——首次交卷、重复交卷保留最好成绩、序列化往返
+                - `ProgressLogicTest`：进度逻辑——首次交卷、重复交卷保留最好成绩、交卷不影响其他课时记录、序列化往返
                 - 跑法：`./gradlew.bat :app:testDebugUnitTest`，全部纯 JVM 执行
 
                 ## 示例说明
