@@ -4,8 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -45,13 +44,12 @@ fun CalculatorScreen(modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 20.dp),
             )
         }
-        // 布局：4 列网格，逐行铺
+        // 布局：标准计算器 4 列网格（末行 0 键跨两列）
         val grid = listOf(
-            listOf("C", "±", "÷", "7"),
-            listOf("8", "9", "×", "4"),
-            listOf("5", "6", "−", "1"),
-            listOf("2", "3", "+", "0"),
-            listOf(".", "="),
+            listOf("C", "±", "÷", "×"),
+            listOf("7", "8", "9", "−"),
+            listOf("4", "5", "6", "+"),
+            listOf("1", "2", "3", "="),
         )
         grid.forEach { rowKeys ->
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
@@ -59,7 +57,7 @@ fun CalculatorScreen(modifier: Modifier = Modifier) {
                     Card(
                         onClick = { state = onKey(state, key) },
                         shape = RoundedCornerShape(14.dp),
-                        modifier = Modifier.weight(1f).aspectRatio(1.4f),
+                        modifier = Modifier.weight(1f).height(52.dp),
                     ) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Text(
@@ -70,8 +68,33 @@ fun CalculatorScreen(modifier: Modifier = Modifier) {
                         }
                     }
                 }
-                // 末行只有 2 个按键：补齐剩余 2 列，保持 4 列网格对齐
-                repeat(4 - rowKeys.size) { Spacer(modifier = Modifier.weight(1f)) }
+            }
+        }
+        // 末行：0 跨两列，"." 与 "=" 各占一列
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            Card(
+                onClick = { state = onKey(state, "0") },
+                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier.weight(2f).height(52.dp),
+            ) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = "0", style = MaterialTheme.typography.titleLarge, color = Indigo)
+                }
+            }
+            listOf(".", "=").forEach { key ->
+                Card(
+                    onClick = { state = onKey(state, key) },
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.weight(1f).height(52.dp),
+                ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = key,
+                            style = MaterialTheme.typography.titleLarge,
+                            color = if (key == "=") Violet else Indigo,
+                        )
+                    }
+                }
             }
         }
     }
