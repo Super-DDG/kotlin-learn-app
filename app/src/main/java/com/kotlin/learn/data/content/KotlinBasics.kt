@@ -16,7 +16,7 @@ object KotlinBasics {
 
                 ## Kotlin 是什么
 
-                - JetBrains 2011 年发布、Google 2017 年定为 Android 官方首选语言
+                - JetBrains 2011 年发布；Google 2017 年 I/O 宣布官方支持，2019 年定为 Android 首选语言
                 - **静态类型**、运行在 JVM 上，与 Java **100% 互操作**
                 - 设计哲学：**简洁**（消样板）、**安全**（空安全消 NPE）、**现代**（协程、DSL）
 
@@ -135,6 +135,14 @@ object KotlinBasics {
 
                 基本类型**没有隐式窄化转换**：`Int` 不会自动变成 `Long`，必须显式调用 `.toLong()`。
                 有 `UInt`、`ULong`、`UShort`、`UByte` 无符号类型（Kotlin 1.9 起 Stable），但日常开发绝大多数场景仍用有符号的 `Int`/`Long`。
+
+                ## 运算符概览
+
+                - 算术：`+` `-` `*` `/` `%`——注意 **Int 除法截断**：`7 / 2` 的结果是 `3`，想要 `3.5` 得写 `7 / 2.0` 或 `7.0 / 2`
+                - 比较：`==` 比较内容（相当于调用 `equals`），`===` 比较是否同一个引用
+                - 逻辑：`&&` `||` `!`，与 C++ 用法一致
+                - 区间：`1..10` 生成可遍历的区间，配合 `until`、`downTo`、`step` 使用
+                - 运算符在 Kotlin 里本质是函数调用，自定义运算符重载与中缀函数见模块四 adv-11
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -183,6 +191,12 @@ object KotlinBasics {
                     options = listOf("unsigned int", "uint8_t", "Int", "size_t"),
                     correctIndex = 2,
                     explanation = "Kotlin 提供有符号的 Byte、Short、Int、Long，以及无符号的 UByte、UShort、UInt、ULong（1.9 起 Stable），但日常开发绝大多数场景仍用有符号的 Int；\"unsigned int\"、\"size_t\" 是 C++ 的类型名。",
+                ),
+                QuizQuestion(
+                    question = "7 / 2 的结果是？",
+                    options = listOf("3.5", "3", "4", "编译错误"),
+                    correctIndex = 1,
+                    explanation = "两个 Int 相除结果仍是 Int，向零截断得 3；想要 3.5 需把一方写成 Double（如 7 / 2.0 或 7.0 / 2），Kotlin 不会做隐式提升。",
                 ),
             ),
         ),
@@ -308,6 +322,12 @@ object KotlinBasics {
                 - `1..10` 是闭区间，`1 until 10` 是半开区间
                 - `downTo` 倒序，`step` 设步长
                 - C 风格的三段式循环被区间表达式取代；需要复杂循环条件时再退回 `while`
+
+                ## 跳转与标签
+
+                - `break` 跳出本层循环、`continue` 跳到本层下一次迭代，语义与 C++ 相同
+                - 多层嵌套想**直接跳出外层**，用标签：`loop@ for (...) { ... break@loop ... }`，`continue@loop` 则跳到外层下一轮
+                - 标签是 Kotlin 对「跳出多层嵌套」这一刚需的受控方案，省掉 flag 变量与 if 判断
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -330,7 +350,7 @@ object KotlinBasics {
                     expectedOutput = "客户端错误\n7",
                 ),
                 CodeExample(
-                    description = "循环与区间：",
+                    description = "循环与区间（含标签跳出外层）：",
                     code = """
                         for (i in 1..5) print(i)               // 12345：闭区间
                         println()
@@ -345,8 +365,17 @@ object KotlinBasics {
 
                         var n = 0
                         while (n < 3) { print(n); n++ }        // while 用法与 C++ 相同
+                        println()
+
+                        // 标签：i*j 一超过 4 就直接跳出外层循环，不用 flag
+                        loop@ for (i in 1..3) {
+                            for (j in 1..3) {
+                                if (i * j > 4) break@loop
+                                print("${'$'}{i * j} ")
+                            }
+                        }
                     """.trimIndent(),
-                    expectedOutput = "12345\n01234\n10741\nKotlinJava\n012",
+                    expectedOutput = "12345\n01234\n10741\nKotlinJava\n012\n1 2 3 2 4 ",
                 ),
             ),
             cppComparison = """
@@ -389,6 +418,17 @@ object KotlinBasics {
                     options = listOf("10 8 6 4 2", "10 7 4", "2 5 8", "10 7 4 1"),
                     correctIndex = 1,
                     explanation = "downTo 2 step 3 表示从 10 倒数、每次减 3、最低到 2：10、7、4，下一个 1 小于 2 停止。",
+                ),
+                QuizQuestion(
+                    question = "loop@ for (...) { ... break@loop } 中 break@loop 的效果是？",
+                    options = listOf(
+                        "只跳出当前内层循环",
+                        "直接跳出标签标记的外层循环",
+                        "跳回外层循环开头继续下一轮",
+                        "编译错误：Kotlin 不支持标签",
+                    ),
+                    correctIndex = 1,
+                    explanation = "break@loop 跳出标签 loop@ 标记的那一层循环，多层嵌套时无需 flag 变量即可整体退出；continue@loop 则是跳到外层的下一轮迭代。",
                 ),
             ),
         ),
@@ -612,6 +652,12 @@ object KotlinBasics {
 
                 类用 `class` 声明，主构造函数直接写在类名后：`class Person(val name: String)`，构造参数可同时声明为属性，省去 C++ 里「成员声明 + 初始化列表」的重复。
 
+                构造细节：
+
+                - 参数可以有**默认值**：`class Person(val name: String, val age: Int = 18)`——默认值即「免费」的重载，不必像 C++ 那样写一串重载构造函数
+                - `init { ... }` 块放构造时的初始化逻辑，按声明顺序随主构造函数执行
+                - 还有次构造函数 `constructor(...)`，但必须委托到主构造函数——日常优先用「主构造 + 默认参数 + 命名参数」
+
                 ## 默认 final 与 override
 
                 - 类默认是 `final` 的，不能被继承；想被继承必须标 `open`，方法要被覆写同样要标 `open`——**与 C++ 正好相反**（C++ 默认可继承，final 才禁止）
@@ -621,6 +667,18 @@ object KotlinBasics {
 
                 - 不支持类的多继承，但可以实现多个 `interface`
                 - 抽象类用 `abstract` 标记，其抽象成员**不需要再写 open**
+
+                ## 接口
+
+                - `interface Shape { fun area(): Double }`：方法可以有**默认实现**，实现类不覆写就直接用默认逻辑
+                - 属性也可声明：抽象属性由实现类提供，或接口里写自定义 getter——但接口**没有幕后字段**，不能存状态
+                - 取舍：**接口无状态、可多实现**；抽象类可有状态与构造逻辑但只能单继承。组合多种能力用接口，共享状态与模板逻辑用抽象类
+
+                ## 嵌套类与内部类
+
+                - `class A { class B }`：B 是**嵌套类**，不持有外部实例的引用，直接 `A.B()` 使用——与 C++ 嵌套类一致
+                - `class A { inner class B }`：B 是**内部类**，持有外部实例引用，必须通过外部实例创建（`a.B()`）；在 B 里引用外部 this 要写 `this@A`
+                - 注意与 Java 的差异：Java 的内部类**默认**隐式持有外部实例，Kotlin 默认不持、需要时才显式标 `inner`——同样是「默认不可，开放才声明」的哲学
             """.trimIndent(),
             codeExamples = listOf(
                 CodeExample(
@@ -683,15 +741,26 @@ object KotlinBasics {
                     explanation = "主构造参数加 val/var 即成为属性，等于 C++ 里「声明字段 + 初始化列表赋值 + 提供 getter」三件事合一。",
                 ),
                 QuizQuestion(
-                    question = "Kotlin 的继承模型是？",
+                    question = "inner class 与普通嵌套类的核心区别是？",
                     options = listOf(
-                        "支持类的多继承",
-                        "不支持类多继承，但可实现多个接口",
-                        "类和接口都不能多实现",
-                        "通过 open 实现多继承",
+                        "inner class 持有外部实例的引用，需通过外部实例创建",
+                        "inner class 不能访问外部类的成员",
+                        "嵌套类持有外部实例，inner class 不持有",
+                        "两者完全等价，只是写法不同",
+                    ),
+                    correctIndex = 0,
+                    explanation = "inner class 持有外部 this（用 this@A 引用），必须先有外部实例 a.B()；嵌套类只是写在外部类内部的独立类，不持外部引用——与 C++ 嵌套类一致。",
+                ),
+                QuizQuestion(
+                    question = "接口方法的默认实现意味着？",
+                    options = listOf(
+                        "实现类必须覆写接口的全部方法",
+                        "实现类不覆写时，直接使用接口里的默认逻辑",
+                        "接口可以像类一样被实例化",
+                        "接口因此可以有幕后字段存状态",
                     ),
                     correctIndex = 1,
-                    explanation = "与 Java 一致：单继承 + 多接口实现。多个能力靠 interface 组合，避免 C++ 多继承的菱形继承问题。",
+                    explanation = "默认实现让接口像「带方法体的抽象类」：实现类可选择覆写，不覆写就用默认。但接口仍无幕后字段、可多实现——这是它与抽象类的分界线。",
                 ),
             ),
         ),
@@ -795,9 +864,16 @@ object KotlinBasics {
         ),
         Lesson(
             id = "kotlin-08",
-            title = "密封类",
+            title = "枚举与密封类",
             concept = """
-                密封类（`sealed class` / `sealed interface`）把子类集合封闭起来，是表达「有限状态」的**标准工具**。
+                ## 枚举类
+
+                - `enum class` 声明**值固定且穷尽**的一组常量：`enum class Planet { 水星, 金星, 地球 }`
+                - `Planet.entries` 拿到全部枚举值（Kotlin 1.9+ 语法，旧写法 `values()`）；`Planet.valueOf("地球")` 按名字取常量，名字不存在会抛异常
+                - 每个枚举常量都是**一个实例**，可带属性与方法：`enum class Planet(val gravity: Double) { 水星(3.7), ... }`
+                - 与密封类的取舍：**枚举 = 值固定且穷尽，一个值一个实例、不携带不同状态**；**sealed = 子类型可携带不同状态**（Success 带数据、Loading 没有）。值不需要带状态用 enum，需要带不同状态用 sealed
+
+                密封类（`sealed class` / `sealed interface`）把子类集合封闭起来，是表达「有限状态」的**标准工具**——当每个状态要携带不同数据时，它比枚举更合适。
 
                 ## 封闭的子类集合
 
@@ -834,6 +910,20 @@ object KotlinBasics {
                         println(render(ApiResult.Loading))             // 加载中…
                     """.trimIndent(),
                     expectedOutput = "数据：Kotlin\n错误码：404\n加载中…",
+                ),
+                CodeExample(
+                    description = "枚举：固定的值集合，可带属性与方法",
+                    code = """
+                        enum class Planet(val gravity: Double) {
+                            水星(3.7), 金星(8.9), 地球(9.8)
+                        }
+
+                        fun main() {
+                            for (p in Planet.entries) println("${'$'}{p.name}：${'$'}{p.gravity}")
+                            println(Planet.valueOf("地球") == Planet.地球)
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "水星：3.7\n金星：8.9\n地球：9.8\ntrue",
                 ),
             ),
             cppComparison = """
@@ -877,15 +967,26 @@ object KotlinBasics {
                     explanation = "新子类让原有的 when 不再穷尽，编译器逐一报错——这正是密封类作为状态建模工具的核心价值。",
                 ),
                 QuizQuestion(
-                    question = "密封类最典型的用途是？",
+                    question = "枚举与密封类如何取舍？",
                     options = listOf(
-                        "提升运行时性能",
-                        "建模有限状态集合，如请求结果、UI 事件",
-                        "替代数据库存储",
-                        "实现类的多继承",
+                        "值固定且不携带不同状态用枚举；子类型要携带不同状态用密封类",
+                        "性能敏感用密封类，其余用枚举",
+                        "枚举不能用于 when 匹配，密封类可以",
+                        "两者完全等价，选哪个都一样",
                     ),
-                    correctIndex = 1,
-                    explanation = "「成功/失败/加载中」这类状态数量有限、每种状态携带不同数据，密封类 + when 是 Kotlin 官方推荐的表达方式。",
+                    correctIndex = 0,
+                    explanation = "枚举每个值是一个固定实例，穷尽但不携带不同状态；密封类的子类可以是携带各自数据的 data class——「成功带数据、失败带错误码、加载中无数据」就得用 sealed。",
+                ),
+                QuizQuestion(
+                    question = "Planet.entries 与 Planet.valueOf(\"地球\") 分别做什么？",
+                    options = listOf(
+                        "entries 返回全部枚举值；valueOf 按名字取对应常量，名字不存在会抛异常",
+                        "entries 返回枚举名列表；valueOf 每次创建一个新实例",
+                        "entries 依赖反射实现；valueOf 只能在枚举定义文件内使用",
+                        "两者等价，都是遍历枚举",
+                    ),
+                    correctIndex = 0,
+                    explanation = "entries（Kotlin 1.9+，替代 values()）给出全部枚举常量，常用于遍历；valueOf(String) 按名字查找已有实例，传入不存在的名字会抛 IllegalArgumentException。",
                 ),
             ),
         ),
