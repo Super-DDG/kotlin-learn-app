@@ -43,7 +43,8 @@ android {
             signingConfig = signingConfigs.getByName("release")
             optimization {
                 enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
+                // packageScope 曾限定优化范围为 androidx/kotlin 包，会把 R8 处理
+                // 切成不相交分区，破坏跨包继承（IllegalAccessError 崩溃），故移除
             }
         }
     }
