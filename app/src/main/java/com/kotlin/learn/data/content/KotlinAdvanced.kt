@@ -1182,13 +1182,13 @@ object KotlinAdvanced {
                 QuizQuestion(
                     question = "@DslMarker 的作用是？",
                     options = listOf(
-                        "标注注解类后，被它标记的接收者在外层接收者的 lambda 中不可直接访问，防止作用域泄漏",
+                        "标注注解类后，在内层 lambda 中不可直接访问外层（同标记）接收者的成员，防止作用域泄漏",
                         "让 DSL 运行更快",
                         "自动生成 DSL 文档",
                         "禁止在 DSL 里调用标准库",
                     ),
                     correctIndex = 0,
-                    explanation = "没有它，html {} 里能直接调到外层接收者的所有成员，嵌套写错也不报错；@DslMarker 把这类错误变成编译错误。",
+                    explanation = "没有它，body {} 里能直接调到外层 html 接收者的所有成员，容易把 this 写错目标；@DslMarker 让编译器禁止这种跨层访问。",
                 ),
             ),
         ),

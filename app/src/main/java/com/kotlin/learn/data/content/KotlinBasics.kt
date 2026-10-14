@@ -78,7 +78,7 @@ object KotlinBasics {
                 ),
             ),
             cppComparison = """
-                · Java 版的 `User` 有 8 行样板，Kotlin 的 `data class User(...)` 一行顶全部——getter/equals/hashCode/toString 自动生成。
+                · Java 版的 `User` 有 9 行样板，Kotlin 的 `data class User(...)` 一行顶全部——getter/equals/hashCode/toString 自动生成。
                 · C++ 的 `const User*` 需要**调用方保证生命周期**；Kotlin 的 `User?` 由编译器和运行时托管，传 null 也不崩。
                 · Kotlin 没有 `#include` 与头文件——包结构即声明，冲突靠全限定名。
                 · Kotlin 的空安全 `?.`/`?:` ≈ C++ 里到处写 `if (p != nullptr)` 的纪律被编译器强制化了。
