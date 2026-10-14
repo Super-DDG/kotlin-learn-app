@@ -8,9 +8,10 @@ import org.junit.Test
 
 class KotlinBasicsContentTest {
     @Test
-    fun `模块一有 14 课且 ID 连续`() {
-        assertEquals(14, KotlinBasics.lessons.size)
-        KotlinBasics.lessons.forEachIndexed { i, lesson ->
+    fun `模块一有 15 课且 ID 含 kotlin-00 前插`() {
+        assertEquals(15, KotlinBasics.lessons.size)
+        assertEquals("kotlin-00", KotlinBasics.lessons[0].id)
+        KotlinBasics.lessons.drop(1).forEachIndexed { i, lesson ->
             assertEquals("kotlin-%02d".format(i + 1), lesson.id)
         }
     }

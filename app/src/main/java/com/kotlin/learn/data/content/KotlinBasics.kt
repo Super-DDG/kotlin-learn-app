@@ -5,9 +5,115 @@ import com.kotlin.learn.data.model.CourseModule
 import com.kotlin.learn.data.model.Lesson
 import com.kotlin.learn.data.model.QuizQuestion
 
-/** 模块一：Kotlin 语言基础（14 课）。课程数据即学习材料，撰写时保持代码可运行。 */
+/** 模块一：Kotlin 语言基础（15 课）。课程数据即学习材料，撰写时保持代码可运行。 */
 object KotlinBasics {
     val lessons: List<Lesson> = listOf(
+        Lesson(
+            id = "kotlin-00",
+            title = "Kotlin 语言介绍",
+            concept = """
+                写代码之前，先弄清楚 **Kotlin 是什么、为什么值得学**。
+
+                ## Kotlin 是什么
+
+                - JetBrains 2011 年发布、Google 2017 年定为 Android 官方首选语言
+                - **静态类型**、运行在 JVM 上，与 Java **100% 互操作**
+                - 设计哲学：**简洁**（消样板）、**安全**（空安全消 NPE）、**现代**（协程、DSL）
+
+                ## 与 Java 相比
+
+                - 空安全把 NullPointerException 拦在编译期
+                - `data class`、`when`、扩展函数消掉大量样板
+                - Java 的每一行 Kotlin 几乎都能等价改写——老项目可以渐进迁移
+
+                ## 与 C++ 相比
+
+                - 内存托管：无手动 delete、无悬垂指针，代价是失去底层控制
+                - 没有宏与模板元编程；泛型比 C++ 模板简单也弱一些
+                - 协程替代裸线程管理并发；编译目标除 JVM 外还有 Native/JS
+            """.trimIndent(),
+            codeExamples = listOf(
+                CodeExample(
+                    description = "同一个\"读用户名并打印欢迎语\"：Kotlin 版（可运行）",
+                    code = """
+                        import kotlinx.coroutines.*
+
+                        data class User(val name: String?, val age: Int)
+
+                        fun greet(user: User?): String =
+                            user?.name?.let { "你好，${'$'}it！" } ?: "游客你好"
+
+                        fun main() = runBlocking {
+                            println(greet(User("旺财", 3)))
+                            println(greet(null))
+                        }
+                    """.trimIndent(),
+                    expectedOutput = "你好，旺财！\n游客你好",
+                ),
+                CodeExample(
+                    description = "同功能 Java 版与 C++ 版（对照阅读，不可在 App 内运行）",
+                    code = """
+                        // Java 版：注意空检查与 getter 样板
+                        public class User {
+                            private final String name;
+                            private final int age;
+                            public User(String name, int age) {
+                                this.name = name; this.age = age;
+                            }
+                            public String getName() { return name; }
+                            public int getAge() { return age; }
+                        }
+                        // String greet(User u) {
+                        //     return u != null && u.getName() != null
+                        //         ? "你好，" + u.getName() + "！" : "游客你好";
+                        // }
+
+                        // C++ 版：注意内存与拷贝语义
+                        // struct User { std::string name; int age; };
+                        // std::string greet(const User* u) {
+                        //     return u ? "你好，" + u->name + "！" : "游客你好";
+                        // }  // 调用方负责 u 的生命周期！
+                    """.trimIndent(),
+                    expectedOutput = "（对照阅读用：Kotlin 版以两行代码完成同等功能）",
+                ),
+            ),
+            cppComparison = """
+                · Java 版的 `User` 有 8 行样板，Kotlin 的 `data class User(...)` 一行顶全部——getter/equals/hashCode/toString 自动生成。
+                · C++ 的 `const User*` 需要**调用方保证生命周期**；Kotlin 的 `User?` 由编译器和运行时托管，传 null 也不崩。
+                · Kotlin 没有 `#include` 与头文件——包结构即声明，冲突靠全限定名。
+                · Kotlin 的空安全 `?.`/`?:` ≈ C++ 里到处写 `if (p != nullptr)` 的纪律被编译器强制化了。
+            """.trimIndent(),
+            questions = listOf(
+                QuizQuestion(
+                    question = "Kotlin 与 Java 的关系是？",
+                    options = listOf(
+                        "100% 互操作，可渐进迁移",
+                        "完全不兼容，只能重写",
+                        "Kotlin 是 Java 的超集",
+                        "Kotlin 编译为 Java 源码",
+                    ),
+                    correctIndex = 0,
+                    explanation = "Kotlin 编译为同一种 JVM 字节码，Java 类可直接在 Kotlin 中调用，反之亦然——这是\"渐进迁移\"口号的底气。",
+                ),
+                QuizQuestion(
+                    question = "与 C++ 相比，Kotlin 失去了什么能力？",
+                    options = listOf(
+                        "面向对象",
+                        "手动内存管理与底层控制",
+                        "函数封装",
+                        "泛型",
+                    ),
+                    correctIndex = 1,
+                    explanation = "托管内存换安全：没有手动 delete 与指针运算，也失去了对内存布局的底层控制——这是取舍而非缺陷。",
+                ),
+                QuizQuestion(
+                    question = "Kotlin 官方主打的三大设计卖点不包括？",
+                    options = listOf("简洁", "安全", "互操作", "比 Java 运行速度快"),
+                    correctIndex = 3,
+                    explanation = "Kotlin 与 Java 编译为同种字节码，运行速度同级；官方卖点主要是简洁、安全（空安全）与互操作。",
+                ),
+            ),
+        ),
         Lesson(
             id = "kotlin-01",
             title = "变量与基本类型",
