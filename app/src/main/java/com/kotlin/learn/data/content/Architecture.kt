@@ -624,7 +624,7 @@ object Architecture {
                     expectedOutput = "界面层：进度刷新，已完成 0 课\n界面层：答对 3/4，已提交记录\n界面层：进度刷新，已完成 1 课\n界面层：答对 4/4，已提交记录\n界面层：进度刷新，已完成 2 课",
                 ),
                 CodeExample(
-                    description = "依赖方向检查器：核对摘自真实 import 的 12 条依赖全部向下（真实运行）",
+                    description = "依赖方向检查器：核对摘自真实 import 的 15 条依赖全部向下（真实运行）",
                     code = """
                         // 本工程包之间的真实依赖（摘自各文件的 import 语句）
                         val dependsOn = mapOf(
