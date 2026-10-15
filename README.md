@@ -39,6 +39,8 @@ cd kotlin_demo
 
 ## 📂 项目结构
 
+> 不熟悉 Android 工程结构？先读 [docs/PROJECT_GUIDE.md](docs/PROJECT_GUIDE.md) —— 专为 C++/CMake 开发者写的工程导读（Gradle ≈ CMake 的完整心智映射）。
+
 ```
 app/src/main/java/com/kotlin/learn/
 ├── data/
